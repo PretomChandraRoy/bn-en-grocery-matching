@@ -9,5 +9,8 @@ __pycache__/
 # Jupyter
 .ipynb_checkpoints/
 
+# Editor settings (the interpreter path is Windows-specific)
+.vscode/
+
 # Local environment variables and secrets
 .env
