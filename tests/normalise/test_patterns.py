@@ -11,7 +11,7 @@ import pytest
 from src.normalise.patterns import BOUNDARY_AFTER, BOUNDARY_BEFORE, WORD_CHARS, bounded
 
 WORD_CHAR = re.compile(f"[{WORD_CHARS}]")
-KEJI = "কেজি"  # the unit word "keji" (kg): KA + E sign + JA + I sign
+KEJI = "\u0995\u09c7\u099c\u09bf"  # the unit word "keji" (kg): KA + E sign + JA + I sign
 
 
 def _class_code_points() -> list[int]:
@@ -20,7 +20,7 @@ def _class_code_points() -> list[int]:
 
 
 def test_word_chars_text_is_the_agreed_definition() -> None:
-    assert WORD_CHARS == "A-Za-z0-9ঀ-ৱৼ৾"
+    assert WORD_CHARS == "A-Za-z0-9\u0980-\u09f1\u09fc\u09fe"
 
 
 def test_every_assigned_bangla_character_in_the_class_is_a_letter_mark_or_digit() -> None:
@@ -38,14 +38,14 @@ def test_bangla_symbols_are_not_word_characters(code_point: int) -> None:
 
 @pytest.mark.parametrize(
     "char",
-    ["a", "Z", "0", "9", "ক", "ে", "ি", "্", "১", "ৼ", "৾"],
+    ["a", "Z", "0", "9", "\u0995", "\u09c7", "\u09bf", "\u09cd", "\u09e7", "\u09fc", "\u09fe"],
 )
 def test_letters_vowel_signs_and_digits_are_word_characters(char: str) -> None:
     assert WORD_CHAR.fullmatch(char) is not None
 
 
 @pytest.mark.parametrize(
-    "char", [" ", ".", ",", "-", "/", "(", ")", "_", "×", "৳", "।", "é"]
+    "char", [" ", ".", ",", "-", "/", "(", ")", "_", "\u00d7", "\u09f3", "\u0964", "\u00e9"]
 )
 def test_separators_are_not_word_characters(char: str) -> None:
     # U+00D7 is the multiplication sign, U+09F3 the rupee sign and U+0964 the danda.
@@ -67,7 +67,7 @@ def test_a_whole_bangla_word_is_one_run_of_word_characters() -> None:
         pytest.param("1kg", False, id="digit-before"),
         pytest.param("kgs", False, id="letter-after"),
         pytest.param("okg", False, id="letter-before"),
-        pytest.param("৳kg", True, id="rupee-sign-is-a-separator"),
+        pytest.param("\u09f3kg", True, id="rupee-sign-is-a-separator"),
     ],
 )
 def test_bounded_latin_word(text: str, found: bool) -> None:
@@ -79,8 +79,8 @@ def test_bounded_latin_word(text: str, found: bool) -> None:
     [
         pytest.param(" " + KEJI + " ", True, id="between-spaces"),
         pytest.param("1 " + KEJI, True, id="after-number-and-space"),
-        pytest.param(KEJI + "তে", False, id="longer-word"),
-        pytest.param("প্র" + KEJI, False, id="inside-longer-word"),
+        pytest.param(KEJI + "\u09a4\u09c7", False, id="longer-word"),
+        pytest.param("\u09aa\u09cd\u09b0" + KEJI, False, id="inside-longer-word"),
     ],
 )
 def test_bounded_bangla_word(text: str, found: bool) -> None:

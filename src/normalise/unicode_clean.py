@@ -16,14 +16,14 @@ from src.normalise.checks import require_str
 # matching (title_norm). title_raw keeps them.
 INVISIBLE_CHARACTERS: frozenset[str] = frozenset(
     {
-        "​",  # ZERO WIDTH SPACE
-        "‌",  # ZERO WIDTH NON-JOINER (ZWNJ)
-        "‍",  # ZERO WIDTH JOINER (ZWJ)
-        "⁠",  # WORD JOINER
-        "﻿",  # ZERO WIDTH NO-BREAK SPACE (byte-order mark)
-        "­",  # SOFT HYPHEN
-        "‎",  # LEFT-TO-RIGHT MARK
-        "‏",  # RIGHT-TO-LEFT MARK
+        "\u200b",  # ZERO WIDTH SPACE
+        "\u200c",  # ZERO WIDTH NON-JOINER (ZWNJ)
+        "\u200d",  # ZERO WIDTH JOINER (ZWJ)
+        "\u2060",  # WORD JOINER
+        "\ufeff",  # ZERO WIDTH NO-BREAK SPACE (byte-order mark)
+        "\u00ad",  # SOFT HYPHEN
+        "\u200e",  # LEFT-TO-RIGHT MARK
+        "\u200f",  # RIGHT-TO-LEFT MARK
     }
 )
 
