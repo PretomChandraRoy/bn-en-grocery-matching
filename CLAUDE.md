@@ -15,7 +15,7 @@ The problem is hard for these reasons:
 
 | Stage | Period | Scope |
 |---|---|---|
-| A1 Data (CURRENT) | Nov 2026 to Mar 2027 | Collect listings from three or more sources, label about 2,000 candidate pairs, write a dataset card |
+| A1 Data (CURRENT) | Nov 2026 to Mar 2027 | Collect listings from two or more sources, label about 2,000 candidate pairs, write a dataset card |
 | A2 Models | Apr to Jun 2027 | Blocking, rule-based baseline, learned similarity (gradient boosting on string features, then multilingual sentence embeddings), evaluation with precision, recall, F1 and pair completeness, error analysis by script |
 | A3 Production | Jul to Sep 2027 | FastAPI and Docker serving, MLflow model registry, GitHub Actions CI/CD, Prometheus and Grafana monitoring, Evidently drift detection, drift-triggered retraining, canary rollout |
 | A4 Paper | Aug to Oct 2027 | Dataset or resource paper |
@@ -35,20 +35,21 @@ Listing record (one row per listing):
 - `source_category`: the shop's own category label; optional, may be empty
 - `script`: one of `bangla`, `romanised`, `english`, `mixed`
 - `url`
-- `collected_at`: ISO 8601 timestamp in UTC
+- `collected_at`: ISO 8601 timestamp in local time with its UTC offset, as recorded at collection (for example `2026-11-03T15:30:00+06:00`). The normalisation code converts it to UTC and writes it to `data/interim` as `collected_at_utc`.
 
 Pair record (one row per labelled pair):
 
 - `pair_id`, `left_source`, `left_id`, `right_source`, `right_id` (each `*_id` is a `listing_id` within its source)
 - `label`: one of `match`, `non_match`, `unsure`
 - `note`, `labeller`, `labelled_at`
+- `guidelines_version`: the version of `docs/labelling_guidelines.md` in force when the label was made (for example "0.1"). The labelling tool fills it in automatically from the `Version:` line of that file, so that line must keep its format.
 
 Labels follow the rules in `docs/labelling_guidelines.md`.
 
 Data layout:
 
 - `data/raw`: collected data, never edited after collection
-- `data/interim`: cleaned and normalised data. Normalised fields such as `title_norm` are produced by the normalisation code and are never written into `data/raw`.
+- `data/interim`: cleaned and normalised data. Normalised fields such as `title_norm` and `collected_at_utc` are produced by the normalisation code and are never written into `data/raw`.
 - `data/labelled`: labelled pairs
 
 All data is versioned with DVC and never committed to Git directly. DVC tracks `data/raw` through `data/raw.dvc`.
@@ -60,7 +61,7 @@ All data is versioned with DVC and never committed to Git directly. DVC tracks `
 - `src/label`: pair generation and the labelling tool
 - `tests`: pytest tests, mirroring the structure of `src`
 - `notebooks`: exploration only; no logic that other code depends on
-- `docs`: sources, labelling guidelines, progress and reviews
+- `docs`: sources, labelling guidelines, dataset card notes, progress and reviews
 
 ## Rules for collecting data (strict)
 

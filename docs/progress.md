@@ -35,3 +35,34 @@
 - DVC enables anonymous usage analytics by default. Decide whether to disable it with `dvc config core.analytics false`.
 - Choose a DVC remote before the pilot collection in December 2026. Until then, versioned data exists only on the local machine, and a clean clone cannot run `dvc pull`.
 - Generate a Linux-compatible lock file for CI (stage A3). The current `requirements-lock.txt` was generated on Windows and pins `pywin32`, which is required only on Windows and is unlikely to install on Linux.
+
+## 2026-11-04
+
+### Done
+
+- Saved `docs/labelling_guidelines.md` as version 0.1. It defines the three labels, a precedence rule (any `non_match` outweighs `unsure`, which outweighs `match`), nine note tags (`unbranded`, `brand_missing`, `brand_differs`, `size_differs`, `variant_differs`, `multipack`, `unit_kind_differs`, `promo_quantity`, `cross_script`), worked examples, and the agreement and adjudication procedure for a second labeller. The version is on a line of the form `Version: 0.1`, which the labelling tool will read.
+- Updated the data design in `CLAUDE.md`: `collected_at` is kept as local time with its UTC offset in `data/raw`, and the normalisation code writes `collected_at_utc` to `data/interim`. Added `guidelines_version` to the pair record, filled in automatically by the labelling tool. Added `docs/dataset_card_notes.md` to the repository layout.
+- Created `docs/dataset_card_notes.md` with entries on the manual `script` annotation, the project-defined `category`, the hidden price during labelling, the sampling mix (incomplete), the guideline version and the dataset-specific scope of Cohen's kappa.
+- Recorded the owner's summary of the source checks so far. The evidence for each source is to be entered in `docs/sources.md`, which is still blank. Shwapno and Daraz are excluded, because their terms prohibit automated collection and use of listing content. foodpanda is usable for manual collection from pandamart only, provided the listings can be viewed without logging in. Chaldal is pending, because the site was unavailable when checked. The pilot may therefore use only two sources (pandamart and possibly Chaldal). Pair generation must keep working for two or more sources.
+- Entered the four source entries in `docs/sources.md` as supplied by the owner: Shwapno and Daraz (automated collection: no; redistribution: no), foodpanda (grocery) restricted to pandamart (both unclear) and Chaldal (incomplete, site unavailable on 2026-11-04). The entries were recorded verbatim and have not been independently checked.
+- Changed the A1 stage description in `CLAUDE.md` from "three or more sources" to "two or more sources". Added the source-count limitation and the redistribution position (pandamart: unclear, treated as not permitted) to `docs/dataset_card_notes.md`.
+- Created `pyproject.toml` with pytest settings (`src` importable from tests) and ruff settings (line length 100; style, error, import-order, docstring, type-hint and encoding rules; tests are exempt from docstring and type-hint rules only).
+
+### Next
+
+- Approve the plan for the first normalisation step (Unicode NFC), after the check of how NFC treats য় on invented strings.
+- Build the normalisation steps in the agreed order, testing the NFC behaviour of য় on real strings first.
+- Show the exact layout of the labelled data (one row per pair and labeller, plus an adjudication file, with re-checked labels kept as earlier rows) before the labelling tool is built.
+- Check the current DVC documentation and propose the Google Drive remote setup, with sources, before the labelling tool is built.
+- Re-check Chaldal (terms, robots.txt, availability) once the site is available. Check that pandamart listings are viewable without logging in. No listings are collected until the owner has confirmed both conditions recorded for foodpanda in `docs/sources.md`.
+
+### Open questions
+
+- Confirm in a clean VS Code terminal, with the repository folder as the workspace, that the environment activates automatically. Confirm that the Python extension is installed, and whether the PowerShell execution policy blocks `Activate.ps1`.
+- DVC enables anonymous usage analytics by default. Decide whether to disable it with `dvc config core.analytics false`.
+- Set up the DVC remote (Google Drive) before labelling starts. Credentials must never be committed; keep them in `.dvc/config.local` or outside the repository.
+- Generate a Linux-compatible lock file for CI (stage A3).
+- Record the final sampling mix and its rationale in `docs/dataset_card_notes.md` once pair generation is built.
+- Find a third usable source. This does not block the pilot: two sources are accepted for A1 if Chaldal proves usable, with the limitation stated in `docs/dataset_card_notes.md`.
+- Only one source (pandamart) is usable at present, so no cross-shop pairs can be built from real data until Chaldal or another source is cleared. Pair generation and the labelling tool are developed and tested on invented data in the meantime.
+- Obtain written permission, or decide what the public dataset may contain, given that redistribution of pandamart listing text is treated as not permitted.
