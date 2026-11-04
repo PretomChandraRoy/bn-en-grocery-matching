@@ -1,0 +1,22 @@
+[tool.pytest.ini_options]
+# Lets tests import project code as "src.normalise..." from the repository root.
+pythonpath = ["."]
+testpaths = ["tests"]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+# PLW1514 (open() without an explicit encoding) is a preview rule in this Ruff version.
+# explicit-preview-rules turns on only the preview rules selected by their exact code.
+preview = true
+explicit-preview-rules = true
+select = ["E", "F", "W", "I", "B", "UP", "D", "ANN", "PLW1514"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.per-file-ignores]
+# Tests need neither docstrings (D) nor type hints (ANN); all other rules still apply.
+"tests/**" = ["D", "ANN"]
