@@ -47,10 +47,12 @@
 - Entered the four source entries in `docs/sources.md` as supplied by the owner: Shwapno and Daraz (automated collection: no; redistribution: no), foodpanda (grocery) restricted to pandamart (both unclear) and Chaldal (incomplete, site unavailable on 2026-11-04). The entries were recorded verbatim and have not been independently checked. The link to the foodpanda terms was added afterwards.
 - Changed the A1 stage description in `CLAUDE.md` from "three or more sources" to "two or more sources". Added the source-count limitation and the redistribution position (pandamart: unclear, treated as not permitted) to `docs/dataset_card_notes.md`.
 - Created `pyproject.toml` with pytest settings (`src` importable from tests) and ruff settings (line length 100; style, error, import-order, docstring, type-hint and encoding rules; tests are exempt from docstring and type-hint rules only).
+- Added the foodpanda terms link to `docs/sources.md` and pushed the commits so far.
+- Step N1 (Unicode clean-up): added `src/normalise/unicode_clean.py` with `INVISIBLE_CHARACTERS` (eight code points), `remove_invisible` and `clean_unicode` (remove invisible characters, then NFC). Non-`str` input raises `TypeError`. Added `tests/normalise/test_unicode_clean.py`, including the case that ZWNJ between two vowel signs must not block composition. NFC was checked on invented strings: it turns য় (U+09DF), ড় (U+09DC) and ঢ় (U+09DD) into base letter plus nukta, composes ে + া into ো, and leaves zero-width characters and Bangla digits unchanged.
 
 ### Next
 
-- Approve the plan for the first normalisation step (Unicode NFC), after the check of how NFC treats য় on invented strings.
+- Next normalisation steps, in order: Bangla digits to ASCII; whitespace and punctuation clean-up (convert U+00A0 and other Unicode space characters to a normal space instead of removing them; lowercase; a space between a number and its unit); size parsing and unit conversion; promotional words. Each step is planned and approved before it is written. Missing values (None, NaN) are handled by the later DataFrame step, because the string functions accept `str` only.
 - Build the normalisation steps in the agreed order, testing the NFC behaviour of য় on real strings first.
 - Show the exact layout of the labelled data (one row per pair and labeller, plus an adjudication file, with re-checked labels kept as earlier rows) before the labelling tool is built.
 - Check the current DVC documentation and propose the Google Drive remote setup, with sources, before the labelling tool is built.
@@ -59,7 +61,6 @@
 ### Open questions
 
 - Confirm in a clean VS Code terminal, with the repository folder as the workspace, that the environment activates automatically. Confirm that the Python extension is installed, and whether the PowerShell execution policy blocks `Activate.ps1`.
-- DVC enables anonymous usage analytics by default. Decide whether to disable it with `dvc config core.analytics false`.
 - Set up the DVC remote (Google Drive) before labelling starts. Credentials must never be committed; keep them in `.dvc/config.local` or outside the repository.
 - Generate a Linux-compatible lock file for CI (stage A3).
 - Record the final sampling mix and its rationale in `docs/dataset_card_notes.md` once pair generation is built.
