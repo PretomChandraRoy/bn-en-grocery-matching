@@ -79,6 +79,7 @@ All data is versioned with DVC and never committed to Git directly. DVC tracks `
 - Never commit data files; use DVC.
 - Use Python 3.12 with the virtual environment in `.venv`. `requirements.txt` lists the direct dependencies with minimum versions; `requirements-lock.txt` holds the full `pip freeze` output.
 - Always read and write text files with encoding='utf-8' explicitly, including CSV files and pandas I/O. Never rely on the platform default encoding, because on Windows it can corrupt Bangla text.
+- In regular expressions, match digits with `[0-9]`, never `\d`. Never use `re.ASCII` or `(?a`. Never use `\w` or `\b`, because Python does not treat Bangla vowel signs as word characters. For word boundaries use the project's word-character class (`A-Za-z0-9` plus U+0980 to U+09F1, U+09FC and U+09FE) with lookarounds; it is defined once, as `WORD_CHARS` in `src/normalise/patterns.py`, and every step imports it. Convert numbers to values only with `Decimal` on text already matched by `[0-9]`. `tests/test_source_policy.py` enforces these regular-expression rules.
 - Use type hints and docstrings, write pytest tests for all normalisation and parsing code, and lint with ruff.
 - Prefer clear code over clever code, explain design decisions briefly, and explain any tool or technique that may be unfamiliar when it is introduced.
 - Write documentation in British English, in clean formal prose, without emojis.
