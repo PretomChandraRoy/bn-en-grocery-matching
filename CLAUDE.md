@@ -31,7 +31,8 @@ Listing record (one row per listing):
 - `title_raw`: exactly as displayed; never modified after collection
 - `brand`, `size_value`, `size_unit`: may be empty
 - `price_bdt`
-- `category`
+- `category`: one of the four project categories: `rice`, `lentils`, `cooking_oil`, `spices`
+- `source_category`: the shop's own category label; optional, may be empty
 - `script`: one of `bangla`, `romanised`, `english`, `mixed`
 - `url`
 - `collected_at`: ISO 8601 timestamp in UTC

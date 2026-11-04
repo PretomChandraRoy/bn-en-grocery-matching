@@ -17,11 +17,16 @@
 - Wrote the Setup and Troubleshooting sections of `README.md`.
 - Created the `docs/sources.md` template with sections for Chaldal, Shwapno, Daraz (grocery section) and foodpanda (grocery). All values are blank, to be completed by the project owner.
 
+- Presented the pilot plan (about 200 listings, normalisation module, candidate pair generation, command-line labelling tool). The owner approved it and decided the matching rules: different pack sizes do not match, size must be exactly equal after conversion, unbranded loose staples match when variety, grade and size agree, and `unsure` is used only when the recorded fields cannot decide.
+- Added `source_category` (the shop's own category label, optional) to the listing record in `CLAUDE.md`, and defined `category` as one of `rice`, `lentils`, `cooking_oil` and `spices`.
+
 ### Next
 
-- Confirm that new VS Code terminals activate the environment (`Get-Command dvc`, `dvc status`, `pytest`, `ruff check`).
-- Complete `docs/sources.md` for each source. No automated collection may start until a source is recorded as allowed.
-- Review the pilot plan (task 5) and answer its open questions about what counts as a match.
+- Review the draft of `docs/labelling_guidelines.md`, written so that a second labeller can follow it without help.
+- Add `pyproject.toml` (pytest and ruff settings), then build the normalisation steps in the agreed order, testing the NFC behaviour of য় on real strings first.
+- Check each source's terms of use and robots.txt and complete `docs/sources.md` before any listings are copied. Enter the pilot listings in Google Sheets and export them as CSV (UTF-8).
+- Propose the DVC remote setup (Google Drive) before the labelling tool is built.
+- Confirm in a clean VS Code terminal, with the repository folder as the workspace, that the environment activates automatically.
 
 ### Open questions
 
