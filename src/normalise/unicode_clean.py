@@ -6,6 +6,8 @@ building ``title_norm``; ``title_raw`` is always kept exactly as the shop displa
 
 import unicodedata
 
+from src.normalise.checks import require_str
+
 # Invisible "format" characters (Unicode category Cf) that carry no meaning for matching.
 # Each one is written as an escape so that it is visible and reviewable in the source.
 #
@@ -26,19 +28,6 @@ INVISIBLE_CHARACTERS: frozenset[str] = frozenset(
 )
 
 
-def _require_str(value: object) -> None:
-    """Raise a TypeError unless the value is a str.
-
-    Args:
-        value: The value to check.
-
-    Raises:
-        TypeError: If value is not a str.
-    """
-    if not isinstance(value, str):
-        raise TypeError(f"expected str, got {type(value).__name__}")
-
-
 def remove_invisible(text: str) -> str:
     """Remove the invisible characters listed in INVISIBLE_CHARACTERS.
 
@@ -51,7 +40,7 @@ def remove_invisible(text: str) -> str:
     Raises:
         TypeError: If text is not a str.
     """
-    _require_str(text)
+    require_str(text)
     return "".join(char for char in text if char not in INVISIBLE_CHARACTERS)
 
 
