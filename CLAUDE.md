@@ -33,7 +33,7 @@ Listing record (one row per listing):
 - `price_bdt`
 - `category`: one of the four project categories: `rice`, `lentils`, `cooking_oil`, `spices`
 - `source_category`: the shop's own category label; optional, may be empty
-- `script`: one of `bangla`, `romanised`, `english`, `mixed`
+- `script`: one of `bangla`, `romanised`, `english`, `mixed`; entered by hand, as defined in `docs/data_entry_rules.md`
 - `url`
 - `collected_at`: ISO 8601 timestamp in local time with its UTC offset, as recorded at collection (for example `2026-11-03T15:30:00+06:00`). The normalisation code converts it to UTC and writes it to `data/interim` as `collected_at_utc`.
 
@@ -61,7 +61,7 @@ All data is versioned with DVC and never committed to Git directly. DVC tracks `
 - `src/label`: pair generation and the labelling tool
 - `tests`: pytest tests, mirroring the structure of `src`
 - `notebooks`: exploration only; no logic that other code depends on
-- `docs`: sources, labelling guidelines, dataset card notes, progress and reviews
+- `docs`: sources, data entry rules, labelling guidelines, dataset card notes, progress and reviews
 
 ## Rules for collecting data (strict)
 

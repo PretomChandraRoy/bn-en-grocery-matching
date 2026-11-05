@@ -1,8 +1,8 @@
 # Labelling Guidelines
 
-Version: 0.1
+Version: 0.2
 
-Pilot draft, 2026-11-04.
+Pilot draft, 2026-11-05.
 
 ## Purpose
 
@@ -93,6 +93,19 @@ The titles below are invented for illustration. They are not real listings.
 
 In the last example, the missing size gives `unsure` (step 1) and the different brands give `non_match` (step 4). Because any `non_match` outweighs `unsure`, the label is `non_match`. The size is unknown, so `size_differs` is not added.
 
+## The script field
+
+Each listing also carries a `script` value that was entered by hand when the listing was collected. Labellers do not enter or change it. It is separate from the `cross_script` tag, which the labelling tool works out from the text of the two titles (Bangla letters in one title and not in the other).
+
+When the value was entered, the title was judged as displayed, ignoring digits, punctuation, spaces and unit abbreviations such as kg, gm, ml and ltr:
+
+- `english`: Latin script; English words and product, brand or variety names only.
+- `romanised`: Latin script that contains at least one generic Bangla word written in Latin letters, for example chal, dal, tel, morich, holud or moshla.
+- `bangla`: Bangla script only.
+- `mixed`: both scripts in the same title, including a Latin brand name in a Bangla-script title.
+
+Brand names and variety names are ignored when choosing between `english` and `romanised`, even when they are Bangla words (for example Radhuni, Miniket, Nazirshail or Chinigura). The full entry rules are in `docs/data_entry_rules.md`.
+
 ## Agreement and adjudication
 
 To measure how reliable the labels are, a second labeller labels an overlap sample independently.
@@ -112,3 +125,4 @@ To measure how reliable the labels are, a second labeller labels an overlap samp
 ## Version history
 
 - 0.1 (2026-11-04): pilot draft.
+- 0.2 (2026-11-05): defined the four values of the script field; no change to the labelling rules.

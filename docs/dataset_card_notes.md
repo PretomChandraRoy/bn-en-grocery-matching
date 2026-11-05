@@ -4,7 +4,7 @@ Running notes for the dataset card, which is an A1 deliverable. Each entry recor
 
 ## The script field is a manual annotation
 
-The `script` field of each listing (`bangla`, `romanised`, `english` or `mixed`) is entered by hand at collection time. It is not computed from the title. Judging romanised Bangla against English is subjective, so the field may contain inconsistencies. (Added 2026-11-04.)
+The `script` field of each listing (`bangla`, `romanised`, `english` or `mixed`) is entered by hand at collection time. It is not computed from the title. Judging romanised Bangla against English is subjective, so the field may contain inconsistencies. The four values are defined in `docs/data_entry_rules.md`: brand and variety names are ignored when choosing between `english` and `romanised`, so only generic Bangla words such as chal, dal or tel make a title `romanised`. (Added 2026-11-04.)
 
 ## The category field is project-defined
 
