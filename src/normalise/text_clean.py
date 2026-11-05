@@ -7,7 +7,8 @@ not depend on each other, and the size text stays in the result.
 The steps run in this fixed order, and the order matters:
 
  1. The text is put into lower case.
- 2. A times sign or an asterisk between two digits becomes "x".
+ 2. A times sign or an asterisk between two digits, or between a unit and a digit, becomes "x"
+    ("2*500" becomes "2x500", and "100g*2" becomes "100g x 2"), so a pack count is not lost.
  3. A thousands comma between digits is removed ("1,000" becomes "1000").
  4. The dots inside dotted unit abbreviations are joined, so the Bangla abbreviations of kg and
     ml are not split into two words. This is also allowed straight after a digit.
@@ -56,6 +57,12 @@ _DOT_FREE_UNITS = {unit.replace(".", "") for unit in UNITS}
 _DOTTED_UNITS = {unit.rstrip(".") for unit in UNITS if "." in unit.rstrip(".")}
 
 _TIMES_BETWEEN_DIGITS = re.compile(rf"(?<=[0-9])\s*[{TIMES_SIGN}*]\s*(?=[0-9])")
+# A number and its unit (any form in the unit table, dotted or not), then a times sign or an
+# asterisk, then a digit: "100g*2". The number must not follow a word character.
+_TIMES_AFTER_UNIT = re.compile(
+    rf"(?<![{WORD_CHARS}])([0-9]+(?:\.[0-9]+)?\s*(?:{_alternation(set(UNITS))}))"
+    rf"\s*[{TIMES_SIGN}*]\s*(?=[0-9])"
+)
 _THOUSANDS_COMMA = re.compile(r"(?<=[0-9]),(?=[0-9]{3}(?![0-9]))")
 _DOTTED_UNIT = re.compile(
     rf"(?:(?<![{WORD_CHARS}])|(?<=[0-9]))(?:{_alternation(_DOTTED_UNITS)}){_OPTIONAL_DOT}"
@@ -103,6 +110,7 @@ def clean_text(text: str) -> str:
     require_str(text)
     text = text.lower()
     text = _TIMES_BETWEEN_DIGITS.sub("x", text)
+    text = _TIMES_AFTER_UNIT.sub(lambda match: f"{match.group(1)} x ", text)
     text = _THOUSANDS_COMMA.sub("", text)
     text = _DOTTED_UNIT.sub(lambda match: match.group(0).replace(".", ""), text)
     text = _APOSTROPHE.sub("", text)

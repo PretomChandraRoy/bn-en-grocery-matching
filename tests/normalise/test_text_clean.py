@@ -87,7 +87,17 @@ CASES = [
     pytest.param(f"Soybean Oil 2{TIMES}500 ml", "soybean oil 2 x 500 ml", id="times-sign"),
     pytest.param("Tea 2 * 100g", "tea 2 x 100 g", id="asterisk"),
     pytest.param("Tea 2x5x3", "tea 2 x 5 x 3", id="two-multiplications"),
-    pytest.param("Tea 100g*2", "tea 100 g 2", id="count-last-loses-the-x"),
+    pytest.param("Tea 100g*2", "tea 100 g x 2", id="count-last-asterisk"),
+    pytest.param(f"Tea 100g{TIMES}2", "tea 100 g x 2", id="count-last-times-sign"),
+    pytest.param("Tea 100 g * 2", "tea 100 g x 2", id="count-last-spaced"),
+    pytest.param("Tea 100gm*2", "tea 100 gm x 2", id="count-last-gm"),
+    pytest.param("Oil 500ml*3", "oil 500 ml x 3", id="count-last-ml"),
+    pytest.param("Tea 1.5kg*2", "tea 1.5 kg x 2", id="count-last-decimal"),
+    pytest.param("Oil 1 ltr.*2", "oil 1 ltr x 2", id="count-last-dotted-latin-unit"),
+    pytest.param("Tea 100g*2*3", "tea 100 g x 2 x 3", id="count-last-then-another-factor"),
+    pytest.param("Tea 100g*", "tea 100 g", id="asterisk-without-a-digit"),
+    pytest.param("Tea 100 pcs*2", "tea 100 pcs 2", id="asterisk-after-an-unknown-unit"),
+    pytest.param("Tea b100g*2", "tea b100g 2", id="asterisk-after-a-number-inside-a-word"),
     pytest.param("Rice 5 x tin", "rice 5 x tin", id="x-not-between-digits"),
     # Bangla.
     pytest.param(f"{CHAL} 1{KEJI}", f"{CHAL} 1 {KEJI}", id="bangla-unit-attached"),
@@ -95,6 +105,13 @@ CASES = [
     pytest.param(f"{CHAL} 1 {KEJI_DOTTED}", f"{CHAL} 1 {KEJI}", id="bangla-dotted-spaced"),
     pytest.param(f"{TEL} 500 {MILI_DOTTED}", f"{TEL} 500 {MILI}", id="bangla-dotted-ml"),
     pytest.param(f"{MOSLA} 250{GRA_DOTTED}", f"{MOSLA} 250 {GRA}", id="bangla-dotted-trailing"),
+    pytest.param(f"{CHAL} 1{KEJI}*2", f"{CHAL} 1 {KEJI} x 2", id="bangla-count-last"),
+    pytest.param(
+        f"{CHAL} 1 {KEJI_DOTTED}*2", f"{CHAL} 1 {KEJI} x 2", id="bangla-dotted-count-last"
+    ),
+    pytest.param(
+        f"{MOSLA} 250{GRA_DOTTED}*2", f"{MOSLA} 250 {GRA} x 2", id="bangla-trailing-dot-count"
+    ),
     pytest.param(GRAM, GRAM, id="vowel-signs-and-virama-are-kept"),
     pytest.param(f"{CHAL} {TEL} {MOSLA}", f"{CHAL} {TEL} {MOSLA}", id="bangla-words"),
     # Case and normalisation corner.
