@@ -24,28 +24,28 @@ LATIN_UNITS = {
     **dict.fromkeys(["ml", "mls"], MILLILITRE),
 }
 
-# (code points, unit): the Bangla spellings of the units, with the word in the comment.
+# (the unit as written in a title, its Unit): the Bangla spellings in the unit table.
 BANGLA_UNITS = [
-    pytest.param((0x0995, 0x09C7, 0x099C, 0x09BF), KILOGRAM, id="keji"),
-    pytest.param((0x0995, 0x09C7, 0x2E, 0x099C, 0x09BF, 0x2E), KILOGRAM, id="ke.ji."),
-    pytest.param((0x0995, 0x09BF, 0x09B2, 0x09CB), KILOGRAM, id="kilo"),
+    pytest.param(bn(0x0995, 0x09C7, 0x099C, 0x09BF), KILOGRAM, id="keji"),  # কেজি
+    pytest.param(bn(0x0995, 0x09C7, 0x2E, 0x099C, 0x09BF, 0x2E), KILOGRAM, id="ke.ji."),  # কে.জি.
+    pytest.param(bn(0x0995, 0x09BF, 0x09B2, 0x09CB), KILOGRAM, id="kilo"),  # কিলো
     pytest.param(
-        (0x0995, 0x09BF, 0x09B2, 0x09CB, 0x0997, 0x09CD, 0x09B0, 0x09BE, 0x09AE),
+        bn(0x0995, 0x09BF, 0x09B2, 0x09CB, 0x0997, 0x09CD, 0x09B0, 0x09BE, 0x09AE),  # কিলোগ্রাম
         KILOGRAM,
         id="kilogram",
     ),
-    pytest.param((0x0997, 0x09CD, 0x09B0, 0x09BE, 0x09AE), GRAM, id="gram"),
-    pytest.param((0x0997, 0x09CD, 0x09B0, 0x09BE, 0x2E), GRAM, id="gra."),
-    pytest.param((0x09B2, 0x09BF, 0x099F, 0x09BE, 0x09B0), LITRE, id="litar"),
-    pytest.param((0x09B2, 0x09BF, 0x2E), LITRE, id="li."),
-    pytest.param((0x09AE, 0x09BF, 0x09B2, 0x09BF), MILLILITRE, id="mili"),
+    pytest.param(bn(0x0997, 0x09CD, 0x09B0, 0x09BE, 0x09AE), GRAM, id="gram"),  # গ্রাম
+    pytest.param(bn(0x0997, 0x09CD, 0x09B0, 0x09BE, 0x2E), GRAM, id="gra."),  # গ্রা.
+    pytest.param(bn(0x09B2, 0x09BF, 0x099F, 0x09BE, 0x09B0), LITRE, id="litar"),  # লিটার
+    pytest.param(bn(0x09B2, 0x09BF, 0x2E), LITRE, id="li."),  # লি.
+    pytest.param(bn(0x09AE, 0x09BF, 0x09B2, 0x09BF), MILLILITRE, id="mili"),  # মিলি
     pytest.param(
-        (0x09AE, 0x09BF, 0x09B2, 0x09BF, 0x09B2, 0x09BF, 0x099F, 0x09BE, 0x09B0),
+        bn(0x09AE, 0x09BF, 0x09B2, 0x09BF, 0x09B2, 0x09BF, 0x099F, 0x09BE, 0x09B0),  # মিলিলিটার
         MILLILITRE,
         id="mililitar",
     ),
-    pytest.param((0x09AE, 0x09BF, 0x2E, 0x09B2, 0x09BF, 0x2E), MILLILITRE, id="mi.li."),
-    pytest.param((0x098F, 0x09AE, 0x098F, 0x09B2), MILLILITRE, id="emel"),
+    pytest.param(bn(0x09AE, 0x09BF, 0x2E, 0x09B2, 0x09BF, 0x2E), MILLILITRE, id="mi.li."),  # মি.লি.
+    pytest.param(bn(0x098F, 0x09AE, 0x098F, 0x09B2), MILLILITRE, id="emel"),  # এমএল
 ]
 
 
@@ -58,13 +58,13 @@ def test_latin_units_are_in_the_table(key: str, unit: Unit) -> None:
     assert UNITS[key] == unit
 
 
-@pytest.mark.parametrize(("code_points", "unit"), BANGLA_UNITS)
-def test_bangla_units_are_in_the_table(code_points: tuple[int, ...], unit: Unit) -> None:
-    assert UNITS[bn(*code_points)] == unit
+@pytest.mark.parametrize(("text", "unit"), BANGLA_UNITS)
+def test_bangla_units_are_in_the_table(text: str, unit: Unit) -> None:
+    assert UNITS[text] == unit
 
 
 def test_table_holds_exactly_the_agreed_units() -> None:
-    bangla = {bn(*param.values[0]) for param in BANGLA_UNITS}
+    bangla = {param.values[0] for param in BANGLA_UNITS}
     assert set(UNITS) == set(LATIN_UNITS) | bangla
     assert _bangla_keys() == bangla
 
@@ -102,7 +102,7 @@ def test_lookup_returns_none_for_unknown_words(text: str) -> None:
 
 
 def test_lookup_finds_a_bangla_unit() -> None:
-    assert lookup_unit(bn(0x0995, 0x09C7, 0x099C, 0x09BF)) == KILOGRAM
+    assert lookup_unit(bn(0x0995, 0x09C7, 0x099C, 0x09BF)) == KILOGRAM  # কেজি
 
 
 def test_alternation_matches_every_unit_in_any_case() -> None:

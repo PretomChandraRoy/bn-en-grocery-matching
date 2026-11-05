@@ -44,7 +44,7 @@ REASONS = (
 )
 
 # The Bangla rupee sign (U+09F3). A number straight after it is a price, never a size.
-RUPEE_SIGN = "\u09f3"
+RUPEE_SIGN = "\u09f3"  # ৳
 # Signs that mean "times" between a pack count and a size: x, X, the multiplication sign
 # (U+00D7) and the asterisk.
 MULTIPLY_SIGNS = "xX\u00d7*"

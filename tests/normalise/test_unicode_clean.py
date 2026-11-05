@@ -9,17 +9,17 @@ import pytest
 from src.normalise.unicode_clean import INVISIBLE_CHARACTERS, clean_unicode, remove_invisible
 
 # Bangla building blocks used below.
-NUKTA = "\u09bc"  # BENGALI SIGN NUKTA
-VOWEL_E = "\u09c7"  # BENGALI VOWEL SIGN E
-VOWEL_AA = "\u09be"  # BENGALI VOWEL SIGN AA
-VOWEL_O = "\u09cb"  # BENGALI VOWEL SIGN O (the composition of E + AA)
-CHAL = "\u099a\u09be\u09b2"  # the word "chal" (rice): CA + AA sign + LA
+NUKTA = "\u09bc"  # ◌় BENGALI SIGN NUKTA
+VOWEL_E = "\u09c7"  # ◌ে BENGALI VOWEL SIGN E
+VOWEL_AA = "\u09be"  # ◌া BENGALI VOWEL SIGN AA
+VOWEL_O = "\u09cb"  # ◌ো BENGALI VOWEL SIGN O (the composition of E + AA)
+CHAL = "\u099a\u09be\u09b2"  # চাল the word "chal" (rice): CA + AA sign + LA
 
 # Each pair: (precomposed letter, the same letter as base + nukta).
 NUKTA_LETTERS = [
-    pytest.param("\u09df", "\u09af" + NUKTA, id="YYA"),
-    pytest.param("\u09dc", "\u09a1" + NUKTA, id="RRA"),
-    pytest.param("\u09dd", "\u09a2" + NUKTA, id="RHA"),
+    pytest.param("\u09df", "\u09af" + NUKTA, id="YYA"),  # য় য
+    pytest.param("\u09dc", "\u09a1" + NUKTA, id="RRA"),  # ড় ড
+    pytest.param("\u09dd", "\u09a2" + NUKTA, id="RHA"),  # ঢ় ঢ
 ]
 
 
@@ -35,7 +35,7 @@ def test_each_invisible_character_is_removed(char: str) -> None:
 
 
 def test_invisible_character_inside_a_bangla_word_is_removed() -> None:
-    word_with_zwj = "\u099a\u200d\u09be\u09b2"
+    word_with_zwj = "\u099a\u200d\u09be\u09b2"  # চাল
     assert clean_unicode(word_with_zwj) == CHAL
 
 
@@ -72,7 +72,7 @@ def test_nfc_applies_to_latin_text_too() -> None:
         "Chinigura Rice 1 kg",
         "500ml",
         CHAL,
-        "\u09e6\u09e7\u09e8\u09e9\u09ea\u09eb\u09ec\u09ed\u09ee\u09ef",  # Bangla digits
+        "\u09e6\u09e7\u09e8\u09e9\u09ea\u09eb\u09ec\u09ed\u09ee\u09ef",  # ০১২৩৪৫৬৭৮৯ Bangla digits
         "  two  spaces  ",
         "non\u00a0breaking",  # U+00A0 is left for the later whitespace step
     ],
@@ -84,7 +84,7 @@ def test_text_without_issues_is_unchanged(text: str) -> None:
 @pytest.mark.parametrize(
     "text",
     [
-        "\u09df\u200d" + CHAL,
+        "\u09df\u200d" + CHAL,  # য়
         VOWEL_E + "\u200c" + VOWEL_AA,
         "a\u00adb\ufeff",
         "",

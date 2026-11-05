@@ -17,25 +17,27 @@ from src.normalise.units import UNITS
 from tests.helpers import bn
 
 # Bangla words used in titles.
-KEJI = bn(0x0995, 0x09C7, 0x099C, 0x09BF)  # kg
-KE_JI_DOTTED = bn(0x0995, 0x09C7, 0x2E, 0x099C, 0x09BF, 0x2E)  # kg, dotted
-KILO = bn(0x0995, 0x09BF, 0x09B2, 0x09CB)  # kilo
-KILOGRAM = bn(0x0995, 0x09BF, 0x09B2, 0x09CB, 0x0997, 0x09CD, 0x09B0, 0x09BE, 0x09AE)
-GRAM = bn(0x0997, 0x09CD, 0x09B0, 0x09BE, 0x09AE)  # gram
-GRA_DOTTED = bn(0x0997, 0x09CD, 0x09B0, 0x09BE, 0x2E)  # gram, dotted
-LITAR = bn(0x09B2, 0x09BF, 0x099F, 0x09BE, 0x09B0)  # litre
-LI_DOTTED = bn(0x09B2, 0x09BF, 0x2E)  # litre, dotted
-MILI = bn(0x09AE, 0x09BF, 0x09B2, 0x09BF)  # ml
-MILILITAR = bn(0x09AE, 0x09BF, 0x09B2, 0x09BF, 0x09B2, 0x09BF, 0x099F, 0x09BE, 0x09B0)  # millilitre
-MI_LI_DOTTED = bn(0x09AE, 0x09BF, 0x2E, 0x09B2, 0x09BF, 0x2E)  # ml, dotted
-EMEL = bn(0x098F, 0x09AE, 0x098F, 0x09B2)  # ml, spelt out in letters
-CHAL = bn(0x099A, 0x09BE, 0x09B2)  # rice
-TEL = bn(0x09A4, 0x09C7, 0x09B2)  # oil
-MOSLA = bn(0x09AE, 0x09B8, 0x09B2, 0x09BE)  # spice
-KEJI_SUFFIXED = KEJI + bn(0x09A4, 0x09C7)  # "kejite": the unit word with a longer ending
+KEJI = bn(0x0995, 0x09C7, 0x099C, 0x09BF)  # কেজি kg
+KE_JI_DOTTED = bn(0x0995, 0x09C7, 0x2E, 0x099C, 0x09BF, 0x2E)  # কে.জি. kg, dotted
+KILO = bn(0x0995, 0x09BF, 0x09B2, 0x09CB)  # কিলো kilo
+KILOGRAM = bn(0x0995, 0x09BF, 0x09B2, 0x09CB, 0x0997, 0x09CD, 0x09B0, 0x09BE, 0x09AE)  # কিলোগ্রাম
+GRAM = bn(0x0997, 0x09CD, 0x09B0, 0x09BE, 0x09AE)  # গ্রাম gram
+GRA_DOTTED = bn(0x0997, 0x09CD, 0x09B0, 0x09BE, 0x2E)  # গ্রা. gram, dotted
+LITAR = bn(0x09B2, 0x09BF, 0x099F, 0x09BE, 0x09B0)  # লিটার litre
+LI_DOTTED = bn(0x09B2, 0x09BF, 0x2E)  # লি. litre, dotted
+MILI = bn(0x09AE, 0x09BF, 0x09B2, 0x09BF)  # মিলি ml
+MILILITAR = bn(
+    0x09AE, 0x09BF, 0x09B2, 0x09BF, 0x09B2, 0x09BF, 0x099F, 0x09BE, 0x09B0
+)  # মিলিলিটার millilitre
+MI_LI_DOTTED = bn(0x09AE, 0x09BF, 0x2E, 0x09B2, 0x09BF, 0x2E)  # মি.লি. ml, dotted
+EMEL = bn(0x098F, 0x09AE, 0x098F, 0x09B2)  # এমএল ml, spelt out in letters
+CHAL = bn(0x099A, 0x09BE, 0x09B2)  # চাল rice
+TEL = bn(0x09A4, 0x09C7, 0x09B2)  # তেল oil
+MOSLA = bn(0x09AE, 0x09B8, 0x09B2, 0x09BE)  # মসলা spice
+KEJI_SUFFIXED = KEJI + bn(0x09A4, 0x09C7)  # তে "kejite": the unit word with a longer ending
 
-BANGLA_ONE = bn(0x09E7)
-RUPEE = bn(0x09F3)
+BANGLA_ONE = bn(0x09E7)  # ১
+RUPEE = bn(0x09F3)  # ৳
 HALF = bn(0x00BD)
 QUARTER = bn(0x00BC)
 TIMES = bn(0x00D7)
@@ -304,6 +306,25 @@ def test_fractions_are_never_read_as_the_digit_after_the_slash() -> None:
         result = parse_size(title)
         assert result.status == "ambiguous"
         assert result.amount is None
+
+
+@pytest.mark.parametrize(
+    ("letter", "name"),
+    [
+        pytest.param(bn(0x00E9), "e-acute", id="e-acute"),
+        pytest.param(bn(0x00F1), "n-tilde", id="n-tilde"),
+        pytest.param(bn(0x00DF), "sharp-s", id="sharp-s"),
+    ],
+)
+def test_unit_followed_by_a_non_ascii_latin_letter_is_still_read(letter: str, name: str) -> None:
+    # Known limitation, pinned so that any change in this behaviour is noticed.
+    # WORD_CHARS holds only the ASCII Latin letters, so an accented letter counts as a separator,
+    # not as part of a word. A unit followed straight by one therefore still ends at the unit:
+    # "1 kg" plus e-acute is read as 1 kg, whereas "1 kgx" (an ASCII letter) is not read at all.
+    # Titles are Bangla and English, so this should be rare. Revisit it if pilot data shows
+    # accented Latin words straight after a unit.
+    assert parse_size("Rice 1 kg" + letter) == title_ok("1000", "weight", "1 kg"), name
+    assert parse_size("Rice 1 kgx") == MISSING
 
 
 @pytest.mark.parametrize("key", sorted(UNITS))

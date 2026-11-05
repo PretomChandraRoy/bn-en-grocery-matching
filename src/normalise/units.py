@@ -35,18 +35,18 @@ UNITS: dict[str, Unit] = {
     # Kilogram (1000 g).
     "kg": _KILOGRAM,
     "kgs": _KILOGRAM,
-    "\u0995\u09c7\u099c\u09bf": _KILOGRAM,
-    "\u0995\u09c7.\u099c\u09bf.": _KILOGRAM,
-    "\u0995\u09bf\u09b2\u09cb": _KILOGRAM,
-    "\u0995\u09bf\u09b2\u09cb\u0997\u09cd\u09b0\u09be\u09ae": _KILOGRAM,
+    "\u0995\u09c7\u099c\u09bf": _KILOGRAM,  # কেজি
+    "\u0995\u09c7.\u099c\u09bf.": _KILOGRAM,  # কে.জি.
+    "\u0995\u09bf\u09b2\u09cb": _KILOGRAM,  # কিলো
+    "\u0995\u09bf\u09b2\u09cb\u0997\u09cd\u09b0\u09be\u09ae": _KILOGRAM,  # কিলোগ্রাম
     # Gram (1 g).
     "g": _GRAM,
     "gm": _GRAM,
     "gms": _GRAM,
     "gram": _GRAM,
     "grams": _GRAM,
-    "\u0997\u09cd\u09b0\u09be\u09ae": _GRAM,
-    "\u0997\u09cd\u09b0\u09be.": _GRAM,
+    "\u0997\u09cd\u09b0\u09be\u09ae": _GRAM,  # গ্রাম
+    "\u0997\u09cd\u09b0\u09be.": _GRAM,  # গ্রা.
     # Litre (1000 ml).
     "l": _LITRE,
     "ltr": _LITRE,
@@ -56,15 +56,15 @@ UNITS: dict[str, Unit] = {
     "litres": _LITRE,
     "liter": _LITRE,
     "liters": _LITRE,
-    "\u09b2\u09bf\u099f\u09be\u09b0": _LITRE,
-    "\u09b2\u09bf.": _LITRE,
+    "\u09b2\u09bf\u099f\u09be\u09b0": _LITRE,  # লিটার
+    "\u09b2\u09bf.": _LITRE,  # লি.
     # Millilitre (1 ml).
     "ml": _MILLILITRE,
     "mls": _MILLILITRE,
-    "\u09ae\u09bf\u09b2\u09bf": _MILLILITRE,
-    "\u09ae\u09bf\u09b2\u09bf\u09b2\u09bf\u099f\u09be\u09b0": _MILLILITRE,
-    "\u09ae\u09bf.\u09b2\u09bf.": _MILLILITRE,
-    "\u098f\u09ae\u098f\u09b2": _MILLILITRE,
+    "\u09ae\u09bf\u09b2\u09bf": _MILLILITRE,  # মিলি
+    "\u09ae\u09bf\u09b2\u09bf\u09b2\u09bf\u099f\u09be\u09b0": _MILLILITRE,  # মিলিলিটার
+    "\u09ae\u09bf.\u09b2\u09bf.": _MILLILITRE,  # মি.লি.
+    "\u098f\u09ae\u098f\u09b2": _MILLILITRE,  # এমএল
 }
 
 

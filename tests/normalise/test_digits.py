@@ -10,8 +10,8 @@ import pytest
 from src.normalise.digits import ASCII_DIGITS, BANGLA_DIGITS, bangla_digits_to_ascii
 from src.normalise.unicode_clean import clean_unicode
 
-KEJI = "\u0995\u09c7\u099c\u09bf"  # the unit word "keji" (kg): KA + E sign + JA + I sign
-MILI = "\u09ae\u09bf\u09b2\u09bf"  # the unit word "mili" (ml): MA + I sign + LA + I sign
+KEJI = "\u0995\u09c7\u099c\u09bf"  # কেজি the unit word "keji" (kg): KA + E sign + JA + I sign
+MILI = "\u09ae\u09bf\u09b2\u09bf"  # মিলি the unit word "mili" (ml): MA + I sign + LA + I sign
 
 
 def test_digit_tables_are_consistent_with_unicode() -> None:
@@ -34,9 +34,9 @@ def test_ascii_digits_are_unchanged() -> None:
 @pytest.mark.parametrize(
     ("text", "expected"),
     [
-        pytest.param("\u09e70", "10", id="bangla-then-ascii"),
-        pytest.param("1\u09e6", "10", id="ascii-then-bangla"),
-        pytest.param("\u09e7\u09e66", "106", id="three-digits-mixed"),
+        pytest.param("\u09e70", "10", id="bangla-then-ascii"),  # ১0
+        pytest.param("1\u09e6", "10", id="ascii-then-bangla"),  # 1০
+        pytest.param("\u09e7\u09e66", "106", id="three-digits-mixed"),  # ১০6
     ],
 )
 def test_digits_mixed_within_one_number(text: str, expected: str) -> None:
@@ -46,9 +46,9 @@ def test_digits_mixed_within_one_number(text: str, expected: str) -> None:
 @pytest.mark.parametrize(
     ("text", "expected"),
     [
-        pytest.param("\u09e7.\u09eb", "1.5", id="decimal"),
-        pytest.param("\u09e6.\u09eb L", "0.5 L", id="decimal-with-unit"),
-        pytest.param("\u09e7,\u09e6\u09e6\u09e6", "1,000", id="comma-is-left-alone"),
+        pytest.param("\u09e7.\u09eb", "1.5", id="decimal"),  # ১.৫
+        pytest.param("\u09e6.\u09eb L", "0.5 L", id="decimal-with-unit"),  # ০.৫ L
+        pytest.param("\u09e7,\u09e6\u09e6\u09e6", "1,000", id="comma-is-left-alone"),  # ১,০০০
     ],
 )
 def test_decimal_point_and_comma_are_left_alone(text: str, expected: str) -> None:
@@ -58,9 +58,9 @@ def test_decimal_point_and_comma_are_left_alone(text: str, expected: str) -> Non
 @pytest.mark.parametrize(
     ("text", "expected"),
     [
-        pytest.param("\u09e7" + KEJI, "1" + KEJI, id="bangla-unit-word"),
-        pytest.param("\u09eb\u09e6\u09e6" + MILI, "500" + MILI, id="bangla-unit-word-500"),
-        pytest.param("\u09eb\u09e6\u09e6ml", "500ml", id="latin-unit"),
+        pytest.param("\u09e7" + KEJI, "1" + KEJI, id="bangla-unit-word"),  # ১
+        pytest.param("\u09eb\u09e6\u09e6" + MILI, "500" + MILI, id="bangla-unit-word-500"),  # ৫০০
+        pytest.param("\u09eb\u09e6\u09e6ml", "500ml", id="latin-unit"),  # ৫০০ml
     ],
 )
 def test_digits_attached_to_unit_words_get_no_space(text: str, expected: str) -> None:
@@ -68,19 +68,19 @@ def test_digits_attached_to_unit_words_get_no_space(text: str, expected: str) ->
 
 
 def test_digits_inside_a_word_are_converted() -> None:
-    assert bangla_digits_to_ascii("\u0995\u09e8\u0996") == "\u09952\u0996"
+    assert bangla_digits_to_ascii("\u0995\u09e8\u0996") == "\u09952\u0996"  # ক2খ ক২খ
 
 
 def test_rupee_sign_is_not_changed() -> None:
     # U+09F3 is a currency symbol, not a digit. Only the digits next to it change.
-    assert bangla_digits_to_ascii("\u09f3\u09eb\u09e6") == "\u09f350"
+    assert bangla_digits_to_ascii("\u09f3\u09eb\u09e6") == "\u09f350"  # ৳50 ৳৫০
 
 
 @pytest.mark.parametrize("code_point", range(0x09F4, 0x09FA))
 def test_currency_fraction_signs_are_not_changed(code_point: int) -> None:
     sign = chr(code_point)
     assert bangla_digits_to_ascii(sign) == sign
-    assert bangla_digits_to_ascii("a" + sign + "\u09e7") == "a" + sign + "1"
+    assert bangla_digits_to_ascii("a" + sign + "\u09e7") == "a" + sign + "1"  # ১
 
 
 @pytest.mark.parametrize(
@@ -100,7 +100,7 @@ def test_text_without_bangla_digits_is_unchanged(text: str) -> None:
     assert bangla_digits_to_ascii(text) == text
 
 
-@pytest.mark.parametrize("text", ["\u09e7\u09e8", "\u09e7.\u09eb" + KEJI, "", "a1b"])
+@pytest.mark.parametrize("text", ["\u09e7\u09e8", "\u09e7.\u09eb" + KEJI, "", "a1b"])  # ১২ ১.৫
 def test_conversion_is_idempotent(text: str) -> None:
     once = bangla_digits_to_ascii(text)
     assert bangla_digits_to_ascii(once) == once
@@ -109,9 +109,9 @@ def test_conversion_is_idempotent(text: str) -> None:
 @pytest.mark.parametrize(
     "text",
     [
-        "\u09e7\u200c\u09e6",  # an invisible character between two digits
-        "\u09e7\u200d0 " + KEJI,
-        "\u09df\u09ea",  # a nukta letter next to a digit
+        "\u09e7\u200c\u09e6",  # ১০ an invisible character between two digits
+        "\u09e7\u200d0 " + KEJI,  # ১0
+        "\u09df\u09ea",  # য়৪ a nukta letter next to a digit
         "plain 5",
     ],
 )
@@ -122,7 +122,7 @@ def test_order_relative_to_clean_unicode_does_not_matter_for_digits(text: str) -
 
 
 def test_invisible_character_between_digits_is_gone_after_both_steps() -> None:
-    assert bangla_digits_to_ascii(clean_unicode("\u09e7\u200c\u09e6")) == "10"
+    assert bangla_digits_to_ascii(clean_unicode("\u09e7\u200c\u09e6")) == "10"  # ১০
 
 
 @pytest.mark.parametrize("value", [None, 123, 1.5, float("nan"), b"abc", ["a"]])

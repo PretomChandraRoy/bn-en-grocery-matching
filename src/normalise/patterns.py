@@ -13,7 +13,7 @@ tests/test_source_policy.py enforces that the source code does not use \w, \b or
 # marks, and digits (U+0980 to U+09F1, U+09FC and U+09FE). The Bangla currency signs and
 # fraction signs (U+09F2 to U+09FB) and U+09FD are deliberately left out, so they count as
 # separators.
-WORD_CHARS = "A-Za-z0-9\u0980-\u09f1\u09fc\u09fe"
+WORD_CHARS = "A-Za-z0-9\u0980-\u09f1\u09fc\u09fe"  # A-Za-z0-9ঀ-ৱৼ৾
 
 # Lookarounds that succeed where the neighbouring character is not a word character, or where
 # the string starts (BOUNDARY_BEFORE) or ends (BOUNDARY_AFTER).

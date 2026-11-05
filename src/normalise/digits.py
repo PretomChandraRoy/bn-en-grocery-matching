@@ -16,7 +16,7 @@ from src.normalise.checks import require_str
 
 # The ten Bangla digits, zero to nine (U+09E6 to U+09EF), written as escapes so that each one
 # is visible and reviewable in the source.
-BANGLA_DIGITS = "\u09e6\u09e7\u09e8\u09e9\u09ea\u09eb\u09ec\u09ed\u09ee\u09ef"
+BANGLA_DIGITS = "\u09e6\u09e7\u09e8\u09e9\u09ea\u09eb\u09ec\u09ed\u09ee\u09ef"  # ০১২৩৪৫৬৭৮৯
 ASCII_DIGITS = "0123456789"
 
 # Maps each Bangla digit to the ASCII digit at the same position. Digits of other scripts (for
