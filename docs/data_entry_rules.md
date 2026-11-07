@@ -13,9 +13,19 @@ These rules describe how to copy listings by hand into a Google Sheet and export
 
 1. Check the file with `python -m src.collect.validate local/<file>.csv`. It lists every error and warning by row and column and changes nothing. Fix errors in the sheet and export again. Warnings, such as a typographic apostrophe or two spaces in a row in a title, are worth checking against the website.
 2. When the file has no errors and every title has been checked against the website, accept it with `python -m src.collect.validate --accept local/<file>.csv`. This copies the file byte for byte into `data/raw` as `<source>_<YYYYMMDD>.csv`, named after the last collection day in the file. It never overwrites a file.
-3. Then run `dvc add data/raw` and commit `data/raw.dvc`.
+3. Then run `dvc add data/raw`, commit `data/raw.dvc`, and back the data up with `dvc push` (see "Backing up").
 
 A listing that is already in `data/raw` cannot be accepted again: re-collecting a listing is not allowed for now. A file in `data/raw` is never edited; a new collection is a new file.
+
+## Backing up
+
+The DVC remote is a folder in Google Drive for desktop, set in `.dvc/config.local` (see "Getting the data" in the README). After each `--accept`, and after each labelling session:
+
+1. Run `dvc add` on the new or changed file (`data/raw`, or the one labelled file) and commit the `.dvc` file.
+2. Run `dvc push`, then `dvc status -c`, which should report "Cache and remote 'storage' are in sync."
+3. Wait until Google Drive for desktop has finished uploading, and check that the new files appear on the Drive website, before relying on the copy. `dvc push` finishes when the files have been written to the synced folder; the upload to Google happens afterwards. To compare, list the files and sizes in the synced folder with `Get-ChildItem -Recurse -File "<folder>" | Select-Object FullName, Length` in PowerShell, then open the same folder on the Drive website (My Drive, the DVC folder, `files`, `md5`) and check that every subfolder, file name and size matches. An empty file shows as 0 bytes.
+
+The remote folder holds real titles, so it must stay private and must not be shared by link. `local/` is not under DVC: keep a separate copy of anything in it that exists nowhere else, such as the out-of-scope test titles.
 
 ## Columns
 

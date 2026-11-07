@@ -8,6 +8,7 @@ fresh clone. Its report names files and rows, never the titles themselves.
 """
 
 import csv
+import re
 import shutil
 import subprocess
 from pathlib import Path
@@ -210,3 +211,115 @@ def test_local_titles_are_read_with_their_file_and_row(tmp_path: Path) -> None:
 
 def test_a_missing_local_folder_gives_no_titles(tmp_path: Path) -> None:
     assert read_local_titles(tmp_path / "missing") == {}
+
+
+# The DVC configuration: machine-specific paths and secrets belong in .dvc/config.local, which
+# Git ignores, and never in .dvc/config, which Git tracks.
+
+DVC_CONFIG = REPO_DIR / ".dvc" / "config"
+SECRET_WORDS = (
+    "secret",
+    "password",
+    "token",
+    "credential",
+    "account_key",
+    "access_key",
+    "key_id",
+    "private_key",
+    "service_account",
+)
+_URL_WITH_SCHEME = re.compile(r"[a-z][a-z0-9+.-]*://", re.IGNORECASE)
+
+
+def find_config_problems(text: str) -> list[str]:
+    """Find local paths and secrets in the text of a DVC config file that Git tracks.
+
+    A remote url must have a scheme such as gdrive:// or s3://. Anything else is a path on one
+    computer. An option whose name suggests a secret must not appear at all. The values are never
+    quoted in the result.
+
+    Args:
+        text: The text of the config file.
+
+    Returns:
+        One line for each problem found.
+    """
+    problems = []
+    for number, line in enumerate(text.splitlines(), start=1):
+        stripped = line.strip()
+        if not stripped or stripped.startswith(("#", ";", "[")) or "=" not in stripped:
+            continue
+        key, _, value = stripped.partition("=")
+        key, value = key.strip().lower(), value.strip()
+        if any(word in key for word in SECRET_WORDS):
+            problems.append(f"line {number}: the option {key} looks like a secret")
+        if key == "url" and value and not _URL_WITH_SCHEME.match(value):
+            problems.append(f"line {number}: the url is a path on one computer")
+    return problems
+
+
+def test_the_tracked_dvc_config_has_no_local_path_and_no_secret() -> None:
+    if not DVC_CONFIG.is_file():
+        pytest.skip(".dvc/config does not exist")
+    assert find_config_problems(DVC_CONFIG.read_text(encoding="utf-8")) == []
+
+
+def test_dvc_local_settings_and_cache_are_ignored_and_not_tracked() -> None:
+    git = shutil.which("git")
+    if git is None or not (REPO_DIR / ".git").exists():
+        pytest.skip("Git or the .git folder is not available")
+    tracked = subprocess.run(
+        [git, "ls-files", "--", ".dvc/config.local", ".dvc/cache", ".dvc/tmp"],
+        cwd=REPO_DIR,
+        capture_output=True,
+        text=True,
+        check=True,
+    ).stdout.split()
+    assert tracked == []
+    for name in (".dvc/config.local", ".dvc/cache", ".dvc/tmp"):
+        ignored = subprocess.run([git, "check-ignore", "-q", name], cwd=REPO_DIR, check=False)
+        assert ignored.returncode == 0, f"{name} is not ignored by Git"
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "",
+        "[core]\n    no_scm = True\n",
+        "['remote \"shared\"']\n    url = gdrive://folder123\n",
+        "['remote \"shared\"']\n    url = s3://a-bucket/path\n",
+        "# url = G:/My Drive/x\n",
+        "[core]\n    remote = storage\n",
+    ],
+)
+def test_config_text_that_is_acceptable(text: str) -> None:
+    assert find_config_problems(text) == []
+
+
+@pytest.mark.parametrize(
+    ("text", "expected"),
+    [
+        pytest.param("    url = G:/My Drive/x\n", "path on one computer", id="drive-letter"),
+        pytest.param("    url = /Users/someone/store\n", "path on one computer", id="absolute"),
+        pytest.param("    url = ../store\n", "path on one computer", id="relative"),
+        pytest.param("    url = ~/store\n", "path on one computer", id="home"),
+        pytest.param("    gdrive_client_secret = abc\n", "looks like a secret", id="client-secret"),
+        pytest.param("    account_key = abc\n", "looks like a secret", id="account-key"),
+        pytest.param("    password = abc\n", "looks like a secret", id="password"),
+        pytest.param("    Access_Key_Id = abc\n", "looks like a secret", id="mixed-case"),
+        pytest.param(
+            "    gdrive_service_account_json_file_path = x\n", "looks like a secret", id="sa"
+        ),
+    ],
+)
+def test_config_text_with_a_local_path_or_a_secret_is_reported(text: str, expected: str) -> None:
+    problems = find_config_problems(text)
+    assert len(problems) == 1
+    assert expected in problems[0]
+    assert "line 1" in problems[0]
+
+
+def test_config_problems_never_quote_the_value() -> None:
+    problems = find_config_problems("    gdrive_client_secret = hunter2\n    url = G:/My Drive/x\n")
+    assert len(problems) == 2
+    assert all("hunter2" not in problem and "My Drive" not in problem for problem in problems)
