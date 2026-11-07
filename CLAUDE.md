@@ -56,11 +56,12 @@ All data is versioned with DVC and never committed to Git directly. DVC tracks `
 
 ## Repository layout
 
-- `src/collect`: collection code
+- `src/collect`: collection code, including the validator for collected files (`validate.py`)
 - `src/normalise`: normalisation code
 - `src/label`: pair generation and the labelling tool
 - `tests`: pytest tests, mirroring the structure of `src`
 - `notebooks`: exploration only; no logic that other code depends on
+- `local/`: real collected data for local checks only; ignored by Git and never committed
 - `docs`: sources, data entry rules, labelling guidelines, dataset card notes, progress and reviews
 
 ## Rules for collecting data (strict)
@@ -77,6 +78,7 @@ All data is versioned with DVC and never committed to Git directly. DVC tracks `
 - Work in small, reviewable steps, one logical change at a time.
 - Never run git commit or git push. The user makes all commits. When a step is finished, suggest a commit message.
 - Never commit data files; use DVC.
+- Files enter `data/raw` only through `python -m src.collect.validate --accept FILE` (see `docs/data_entry_rules.md`). Real collected data for local checks lives in `local/`, which Git ignores. Real titles must never be committed anywhere in the repository, including tests and documentation. `tests/test_data_safety.py` fails if Git tracks anything under `local/` or `data/raw`.
 - Use Python 3.12 with the virtual environment in `.venv`. `requirements.txt` lists the direct dependencies with minimum versions; `requirements-lock.txt` holds the full `pip freeze` output.
 - Always read and write text files with encoding='utf-8' explicitly, including CSV files and pandas I/O. Never rely on the platform default encoding, because on Windows it can corrupt Bangla text.
 - In regular expressions, match digits with `[0-9]`, never `\d`. Never use `re.ASCII` or `(?a`. Never use `\w` or `\b`, because Python does not treat Bangla vowel signs as word characters. For word boundaries use the project's word-character class (`A-Za-z0-9` plus U+0980 to U+09F1, U+09FC and U+09FE) with lookarounds; it is defined once, as `WORD_CHARS` in `src/normalise/patterns.py`, and every step imports it. Convert numbers to values only with `Decimal` on text already matched by `[0-9]`. `tests/test_source_policy.py` enforces these regular-expression rules for `src/`.

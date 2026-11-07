@@ -4,10 +4,18 @@ These rules describe how to copy listings by hand into a Google Sheet and export
 
 ## Sheet and file
 
-- Use one sheet per source and collection day.
+- Use one sheet per source. Rows may come from several collection days.
 - The first row holds exactly these column names, in this order: `source`, `listing_id`, `title_raw`, `brand`, `size_value`, `size_unit`, `price_bdt`, `category`, `source_category`, `script`, `url`, `collected_at`.
 - Format the `listing_id` and `collected_at` columns as plain text before typing, because Google Sheets otherwise drops leading zeros and reformats dates.
-- Export the sheet as CSV (UTF-8) and save it as `data/raw/<source>_<YYYYMMDD>.csv`, for example `pandamart_20261110.csv`. Do not edit a file after collection; a new collection is a new file.
+- Export the sheet as CSV (UTF-8, without a byte-order mark) and save it in `local/`, which Git ignores. Never copy a file into `data/raw` by hand; see "Validation and acceptance" below.
+
+## Validation and acceptance
+
+1. Check the file with `python -m src.collect.validate local/<file>.csv`. It lists every error and warning by row and column and changes nothing. Fix errors in the sheet and export again. Warnings, such as a typographic apostrophe or two spaces in a row in a title, are worth checking against the website.
+2. When the file has no errors and every title has been checked against the website, accept it with `python -m src.collect.validate --accept local/<file>.csv`. This copies the file byte for byte into `data/raw` as `<source>_<YYYYMMDD>.csv`, named after the last collection day in the file. It never overwrites a file.
+3. Then run `dvc add data/raw` and commit `data/raw.dvc`.
+
+A listing that is already in `data/raw` cannot be accepted again: re-collecting a listing is not allowed for now. A file in `data/raw` is never edited; a new collection is a new file.
 
 ## Columns
 
@@ -15,7 +23,7 @@ These rules describe how to copy listings by hand into a Google Sheet and export
 |---|---|
 | `source` | A short lower-case name for the shop. For the foodpanda grocery shop use `pandamart`. |
 | `listing_id` | The shop's own identifier from the product URL if there is one, otherwise the URL slug. For pandamart it is the numeric product ID at the end of the product URL. |
-| `title_raw` | The title copied exactly as displayed, with no changes. |
+| `title_raw` | The title copied exactly as displayed, with no changes. Copy it directly from the page with Ctrl+C and paste it as plain text. Do not retype it and do not transcribe it from a screenshot. |
 | `brand` | The brand, only if the shop shows it as a separate field, exactly as shown. Otherwise leave it blank. Never extract it from the title by hand. |
 | `size_value` | The size value, only if the shop shows it as a separate field, exactly as shown (for example `500`). Otherwise leave it blank. Never extract it from the title by hand. |
 | `size_unit` | The size unit, only if the shop shows it as a separate field, exactly as shown (for example `gm`). Otherwise leave it blank. |
