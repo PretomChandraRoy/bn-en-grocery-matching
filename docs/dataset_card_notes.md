@@ -35,3 +35,7 @@ Stage A1 collects listings from two or more sources, not the three originally pl
 ## Redistribution of listing text
 
 For pandamart, the redistribution of listing text is unclear (see `docs/sources.md`). It is treated as not permitted until written permission is obtained. What the public dataset may contain, for example whether `title_raw` can be published, is therefore undecided. (Added 2026-11-04.)
+
+## How the titles were captured
+
+The 11 pilot titles from pandamart were transcribed by hand from screenshots, not copied from the page, so they may contain small errors, for example in spaces or apostrophes. They were accepted for the pilot without being checked against the website. Every later listing is copied directly from the page with Ctrl+C and pasted as plain text. (Added 2026-11-07.)

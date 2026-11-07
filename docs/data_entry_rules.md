@@ -50,7 +50,7 @@ The titles below are invented for illustration.
 | Title | Value | Reason |
 |---|---|---|
 | Miniket Rice 5 kg | `english` | Miniket is a variety name, so it is ignored. |
-| Radhuni Turmeric Powder 100 gm | `english` | Radhuni is a brand name, so it is ignored. |
+| Moyurpankhi Turmeric Powder 100 gm | `english` | Moyurpankhi is an invented brand name made from Bangla words, so it is ignored. |
 | Pran Soyabean Oil 1 L | `english` | Only a brand name and English words. |
 | Teer Chinigura Chal 1 kg | `romanised` | Chal is a generic Bangla word. |
 | Moog Dal 500 gm | `romanised` | Dal is a generic Bangla word. |
