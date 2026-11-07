@@ -12,5 +12,9 @@ __pycache__/
 # Editor settings (the interpreter path is Windows-specific)
 .vscode/
 
+# Real collected data for local checks only. Never commit it: permission to republish
+# listing text is unclear, and the repository is public.
+local/
+
 # Local environment variables and secrets
 .env
