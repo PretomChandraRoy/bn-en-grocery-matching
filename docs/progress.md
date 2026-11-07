@@ -109,3 +109,24 @@
 
 - Accepted limitation (owner's decision, 2026-11-07): the 11 pilot `title_raw` values were transcribed from screenshots, not copied from the page, and are accepted for the pilot without checking them against the website. They may contain small errors, for example in spaces or apostrophes. Every future listing is copied directly with Ctrl+C and pasted as plain text. This is recorded in `docs/dataset_card_notes.md` and `docs/data_entry_rules.md`.
 - N3 gaps seen so far only in out-of-scope titles: a "+/-" tolerance after a size, and a pack count written as "N Packs". Revisit them if they appear in in-scope titles; the smoke test flags pack-count wording in in-scope titles.
+
+## 2026-11-07
+
+### Done
+
+- Recorded the owner's decisions: the 11 pilot titles were transcribed from screenshots and are accepted unchecked (`docs/dataset_card_notes.md`, `docs/data_entry_rules.md`); every future listing is copied with Ctrl+C and pasted as plain text. Replaced an example title in `docs/data_entry_rules.md` that matched a real title in three words with an invented one. Added the rule to `CLAUDE.md` that brand names alone may be mentioned in the documentation but every example title must be invented.
+- The owner accepted the pilot file into `data/raw` with `--accept` and committed `data/raw.dvc` (reported by the owner). `dvc status` reports the data as up to date, and no DVC remote is configured yet.
+- Added a leak-check test to `tests/test_data_safety.py`. It reads the titles in `local/`, searches every file that Git tracks or could add for a whole title or any run of three words (at least 15 characters), and reports only the file and the row, never the title. It is skipped when `local/` holds no titles. It passes now, and a deliberate leak into a scratch copy made it fail.
+- Recorded the layout of the labelled data in `docs/data_entry_rules.md`: one file per labeller, each added to DVC on its own, pseudonymous labeller IDs, local-offset timestamps, an append-only history with the current label being the latest row, `adjudication.csv`, `overlap_sample.csv`, an optional `skipped_<labeller>.csv`, and the generated `data/interim/candidates.csv` and `data/interim/pairs_final.csv`. `CLAUDE.md` points to it.
+- Planned, not built, a DVC remote that is a local path inside a Google Drive for desktop folder, stored in `.dvc/config.local`. A trial in a throwaway project confirmed that `dvc remote add --local -d` writes both the URL and the default setting to `.dvc/config.local` and leaves `.dvc/config` free of remote settings, that a path with spaces works with forward slashes, that push, status and a restore into a second project work, and that after the folder moved the data showed as `new` until the URL was updated.
+
+### Next
+
+- Approve the remote plan, then create the private Drive folder, add the remote with `--local`, push, and run a restore test from a fresh clone.
+- Build the validator for the labelled files after the remote is set up.
+- Back up `local/` (the collected files and the out-of-scope titles), which Git ignores and DVC does not track.
+
+### Open questions
+
+- Until a remote is set up, the accepted data exists only on this machine (in `data/raw` and the DVC cache), as do the files in `local/`.
+- Whether a file in `local/` should be kept after it has been accepted, since `data/raw` then holds the same data.

@@ -37,7 +37,7 @@ Listing record (one row per listing):
 - `url`
 - `collected_at`: ISO 8601 timestamp in local time with its UTC offset, as recorded at collection (for example `2026-11-03T15:30:00+06:00`). The normalisation code converts it to UTC and writes it to `data/interim` as `collected_at_utc`.
 
-Pair record (one row per labelled pair):
+Pair record (one row per pair, labeller and labelling event; the current label is the latest row; see `docs/data_entry_rules.md` for the files):
 
 - `pair_id`, `left_source`, `left_id`, `right_source`, `right_id` (each `*_id` is a `listing_id` within its source)
 - `label`: one of `match`, `non_match`, `unsure`
@@ -50,7 +50,7 @@ Data layout:
 
 - `data/raw`: collected data, never edited after collection
 - `data/interim`: cleaned and normalised data. Normalised fields such as `title_norm` and `collected_at_utc` are produced by the normalisation code and are never written into `data/raw`.
-- `data/labelled`: labelled pairs
+- `data/labelled`: labelled pairs, one file per labeller, each tracked by DVC on its own. Generated files such as `data/interim/pairs_final.csv` are never edited by hand.
 
 All data is versioned with DVC and never committed to Git directly. DVC tracks `data/raw` through `data/raw.dvc`.
 

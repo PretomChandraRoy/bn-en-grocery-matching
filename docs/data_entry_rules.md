@@ -63,3 +63,32 @@ The titles below are invented for illustration.
 The `script` value is a manual annotation and may contain inconsistencies, especially between `english` and `romanised`. It is not the same as the `cross_script` tag in the labelling guidelines, which the labelling tool works out from the text of the two titles. Later analysis by script uses the `script` values.
 
 These definitions also appear in `docs/labelling_guidelines.md`. If one changes, change the other.
+
+## Labelled data files
+
+The labelling tool writes the labels to `data/labelled/`. Each file there is added to DVC on its own (`dvc add data/labelled/<file>`), not the folder, so that two labellers never change the same DVC output.
+
+| File | Rows | Columns |
+|---|---|---|
+| `labels_<labeller>.csv`, one per labeller, only ever added to | One row per pair, labeller and labelling event | `pair_id`, `left_source`, `left_id`, `right_source`, `right_id`, `label`, `note`, `labeller`, `labelled_at`, `guidelines_version` |
+| `adjudication.csv` | One row per adjudicated pair | `pair_id`, `final_label`, `final_note`, `reason`, `adjudicated_by`, `adjudicated_at`, `guidelines_version` |
+| `overlap_sample.csv` | One row per pair in the second labeller's sample | `pair_id`, `seed`, `drawn_at` |
+| `skipped_<labeller>.csv` | One row per pair skipped because of excluded content, such as a bundle of different products | `pair_id`, `reason`, `skipped_at` |
+
+Rules for these files:
+
+- `labeller` is a pseudonymous ID such as `L1` or `L2`, never a name, because the dataset will be public. A labeller's file is named after their ID.
+- `pair_id` is `<left_source>:<left_id>|<right_source>:<right_id>`. The source that comes first alphabetically is the left one; if both are the same source, the smaller `listing_id` comes first. The four ID columns must agree with `pair_id`.
+- `labelled_at`, `adjudicated_at`, `drawn_at` and `skipped_at` use an ISO 8601 time with the local offset, in the same form as `collected_at`, for example `2026-11-07T15:30:00+06:00`.
+- `label` is one of `match`, `non_match` and `unsure`. `note` holds the tags from `docs/labelling_guidelines.md` separated by semicolons, with an optional comment after ` # `.
+- The tool fills in `guidelines_version` from the `Version:` line of `docs/labelling_guidelines.md`, and adds the `cross_script` tag itself.
+- A labeller's current label for a pair is their latest row for it. Earlier rows are kept. A correction, or a re-check after the guidelines change, adds a new row with the new `guidelines_version`; nothing is deleted or edited.
+- The labelling tool for one labeller never reads another labeller's file, so that the labels stay independent.
+- Consistency rules, which the validator for labelled files will check: the tags `size_differs`, `variant_differs`, `brand_differs` and `unit_kind_differs` require the label `non_match`; `brand_missing` requires `unsure` or `non_match`; both listings exist in `data/raw`; `guidelines_version` appears in the version history of the guidelines; `labelled_at` is not in the future; adjudicated pairs are in the overlap sample.
+
+Generated files, which are never edited by hand:
+
+- `data/interim/candidates.csv` lists the candidate pairs with the strategy and scores that selected each one. Keeping this outside `data/labelled/` leaves the label files in the agreed pair-record format plus `guidelines_version`.
+- `data/interim/pairs_final.csv` has one row per pair for the published dataset: the adjudicated label if there is one, otherwise the single labeller's current label, together with both original labels for the pairs in the overlap sample.
+
+Agreement is computed from each labeller's latest label made before the first row of `adjudication.csv`. A script prints Cohen's kappa and the percentage of identical labels, and the figures are recorded in `docs/reviews/`.
