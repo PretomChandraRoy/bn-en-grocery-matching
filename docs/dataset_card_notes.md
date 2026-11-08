@@ -38,4 +38,4 @@ For pandamart, the redistribution of listing text is unclear (see `docs/sources.
 
 ## How the titles were captured
 
-The 11 pilot titles from pandamart were transcribed by hand from screenshots, not copied from the page, so they may contain small errors, for example in spaces or apostrophes. They were accepted for the pilot without being checked against the website. Every later listing is copied directly from the page with Ctrl+C and pasted as plain text. (Added 2026-11-07.)
+The 11 pilot titles from pandamart were transcribed by hand from screenshots, not copied from the page, so they may contain small errors, for example in spaces or apostrophes. They were accepted for the pilot without being checked against the website. The 11 pilot titles from meenabazar were transcribed from screenshots in the same way, so they may contain the same kinds of small errors. Every later listing is copied directly from the page with Ctrl+C and pasted as plain text. (Added 2026-11-07; extended 2026-11-08.)

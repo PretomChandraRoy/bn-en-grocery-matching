@@ -31,7 +31,7 @@ The remote folder holds real titles, so it must stay private and must not be sha
 
 | Column | What to enter |
 |---|---|
-| `source` | A short lower-case name for the shop. For the foodpanda grocery shop use `pandamart`. |
+| `source` | A short lower-case name for the shop: `pandamart` (the foodpanda grocery shop) or `meenabazar` (Meena Bazar Online). |
 | `listing_id` | The shop's own identifier from the product URL if there is one, otherwise the URL slug. For pandamart it is the numeric product ID at the end of the product URL. |
 | `title_raw` | The title copied exactly as displayed, with no changes. Copy it directly from the page with Ctrl+C and paste it as plain text. Do not retype it and do not transcribe it from a screenshot. |
 | `brand` | The brand, only if the shop shows it as a separate field, exactly as shown. Otherwise leave it blank. Never extract it from the title by hand. |
@@ -43,6 +43,27 @@ The remote folder holds real titles, so it must stay private and must not be sha
 | `script` | One of `english`, `romanised`, `bangla` and `mixed`, entered by hand. See "The script values" below. |
 | `url` | The product page address. |
 | `collected_at` | The local time of collection with its offset, as plain text, for example `2026-11-03T15:30:00+06:00`. The normalisation code converts it to UTC. |
+
+## Rules for each source
+
+`docs/sources.md` says what may be collected from each source and how. These are the entry rules that follow from it.
+
+### pandamart
+
+- Only the Gulshan-Banani store, with the site language set to EN.
+- `listing_id` is the numeric product ID at the end of the product URL.
+- `brand`, `size_value` and `size_unit` are blank, because the shop has no separate fields for them. Labellers read the brand and the size from the title.
+
+### meenabazar
+
+- Only items sold by Meena Bazar itself (the "Sold By" field), always with the same delivery location, which is recorded in `docs/sources.md`.
+- `listing_id` is the numeric ID at the end of the product URL, which has the form `/product/<SLUG>/<id>`. The URL slug can disagree with the title (for example one spelling in the URL and another in the title); the title is authoritative.
+- `title_raw` is the main product heading, copied as shown. Headings are shown as stored, sometimes in capitals.
+- `brand` is the Brand field exactly as shown. It often holds the manufacturer, not the brand (for example a food company's name for a product sold under one of its brands), and it can read "No Brand". Record it as shown; labellers read the brand from the title.
+- `price_bdt` is the selling price as shown, with its two decimals (for example `420.00`).
+- `size_value` and `size_unit` are blank, because the site has no separate size field. Its "unit" field (EACH or KG) is not a size and must not be entered there.
+- Items sold per kg (Unit: KG) are excluded from the pilot, because their size is variable. They can be kept in `local/` for tests only.
+- "Add Wishlist" instead of "Add to cart" probably means that the item is out of stock. The listing is still collected.
 
 ## The script values
 
