@@ -55,3 +55,16 @@ Allowed values for the two permission fields: yes, no, unclear. If permission is
 - Scripts and languages used in listings:
 - Fields available:
 - Notes: Excluded. Manual collection is explicitly excluded by section 6.2. Usable only with written permission from Chaldal PLC.
+
+## Meena Bazar Online
+
+- Date checked: 2026-11-08
+- URL: https://meenabazaronline.com
+- Platform still operating: yes
+- Terms of use summary (with link): Terms and Conditions page linked from the site footer (exact URL to be added), read on 2026-11-08. The terms contain no clause on copying or reusing site content, intellectual property, scraping, robots or automated access. Registration is required to place orders. The Order Policy states that the site is for personal consumption and discourages reselling or commercial motives. Prices of perishable products, including rice, vary with the selected delivery location. The terms carry no version date.
+- robots.txt rules for product pages: no robots.txt exists; https://meenabazaronline.com/robots.txt redirects to /exception/404 (checked 2026-11-08). Under RFC 9309 a missing robots.txt sets no restrictions, but it is not permission.
+- Automated collection allowed (yes / no / unclear): unclear
+- Redistribution of listing text allowed (yes / no / unclear): unclear
+- Scripts and languages used in listings: Latin script, English. The product page heading is shown in title case, while the breadcrumb, URL slug and description show the name in upper case. Bangla-script titles not seen.
+- Fields available: title, brand (separate field), unit (for example EACH), seller ("Sold By"), shop category (for example Grocery), selling price, original price when discounted, description. No separate size field.
+- Notes: Listings are viewable without logging in (checked 2026-11-08 in a private window). Collect manually only, only items sold by Meena Bazar itself, always with the same delivery location. Copy title_raw from the main product heading. Use the numeric ID at the end of the product URL (/product/<SLUG>/<id>) as listing_id. Fill brand from the Brand field. Seek written permission before publishing listing text.
