@@ -123,11 +123,25 @@
 
 ### Next
 
-- Confirm that Google Drive for desktop has finished uploading, and that the three files appear on the Drive website (see the checks in `docs/data_entry_rules.md`, "Backing up").
 - Build the validator for the labelled files after the remote is set up.
 - Back up `local/` (the collected files and the out-of-scope titles), which Git ignores and DVC does not track.
 
 ### Open questions
 
-- Until Google Drive for desktop has finished uploading, the remote copy is not a backup: `dvc push` only wrote the files into the synced folder. Files in `local/` are not under DVC.
 - Whether a file in `local/` should be kept after it has been accepted, since `data/raw` then holds the same data.
+
+## 2026-11-08
+
+### Done
+
+- Confirmed the DVC remote by the owner's checks: Google Drive for desktop has finished uploading, and all three files are on Google Drive's servers with the expected names and sizes (2805, 150 and 0 bytes). The folder is private, with only the owner's account as owner and no link sharing. The remote copy is therefore a real backup of `data/raw`. Files in `local/` are still not under DVC.
+- Prepared a plan, not yet built, for the validator of the labelled files (`src/label/validate.py`, with shared definitions in `src/label/records.py`). Building waits for the owner's approval.
+
+### Next
+
+- Approve the plan for the validator of the labelled files, then build it with its tests.
+- Revisit N5 (promotional words) and the cross-script stratum once a second source is available.
+
+### Open questions
+
+- Only one source (pandamart) is cleared so far, and pairs must come from two different sources, so no real labelled file can be valid yet. The labelling code is developed and tested on invented data.
