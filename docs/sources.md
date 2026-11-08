@@ -45,13 +45,13 @@ Allowed values for the two permission fields: yes, no, unclear. If permission is
 
 ## Chaldal
 
-- Date checked: 2026-11-04 (incomplete)
+- Date checked: 2026-11-08
 - URL: https://chaldal.com
-- Platform still operating: unclear (website unavailable on 2026-11-04)
-- Terms of use summary (with link): not yet read. Terms page: https://chaldal.com/t/TermsOfUse
-- robots.txt rules for product pages: not yet checked. An automated request for the terms page was refused under the site's robots.txt rules.
-- Automated collection allowed (yes / no / unclear): unclear
-- Redistribution of listing text allowed (yes / no / unclear): unclear
+- Platform still operating: yes
+- Terms of use summary (with link): https://chaldal.com/t/TermsOfUse. Section 6.1 states that no material on the site may be "copied, reproduced, republished, installed, posted, transmitted, stored, or distributed without written permission from Chaldal PLC". Section 6.2 prohibits any "page-scrape", "robot", "spider" or other automatic means, "or any similar or equivalent manual process, to access, acquire, copy or monitor any portion of the website or any content". The terms carry no version date.
+- robots.txt rules for product pages: not checked; the terms already prohibit collection.
+- Automated collection allowed (yes / no / unclear): no
+- Redistribution of listing text allowed (yes / no / unclear): no
 - Scripts and languages used in listings:
 - Fields available:
-- Notes: Recheck the terms and robots.txt when the site is available.
+- Notes: Excluded. Manual collection is explicitly excluded by section 6.2. Usable only with written permission from Chaldal PLC.

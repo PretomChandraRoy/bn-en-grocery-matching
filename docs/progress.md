@@ -78,14 +78,14 @@
 - Set up the DVC remote (Google Drive) before labelling starts. Credentials must never be committed; keep them in `.dvc/config.local` or outside the repository.
 - Generate a Linux-compatible lock file for CI (stage A3).
 - Record the final sampling mix and its rationale in `docs/dataset_card_notes.md` once pair generation is built.
-- Find a third usable source. This does not block the pilot: two sources are accepted for A1 if Chaldal proves usable, with the limitation stated in `docs/dataset_card_notes.md`.
-- Only one source (pandamart) is usable at present, so no cross-shop pairs can be built from real data until Chaldal or another source is cleared. Pair generation and the labelling tool are developed and tested on invented data in the meantime.
+- Find a third usable source. This does not block the pilot: two sources are accepted for A1 if Chaldal proves usable, with the limitation stated in `docs/dataset_card_notes.md`. (Superseded on 2026-11-08: Chaldal is excluded; see the 2026-11-08 entry.)
+- Only one source (pandamart) is usable at present, so no cross-shop pairs can be built from real data until Chaldal or another source is cleared. Pair generation and the labelling tool are developed and tested on invented data in the meantime. (Superseded on 2026-11-08: Chaldal is excluded; see the 2026-11-08 entry.)
 - Obtain written permission, or decide what the public dataset may contain, given that redistribution of pandamart listing text is treated as not permitted.
 - Check the Bangla unit spellings in `src/normalise/units.py` against real listings during collection, and add any that are missing to the table. The owner will do this.
 - Review with pilot data: a fraction in the title makes the size ambiguous even when the size field is clear. This was accepted for the pilot.
 - Review with pilot data: accented Latin letters count as separators in word boundaries (see the pinned test for `1 kg` followed by an accented letter).
 - Known limitations of `clean_text`, accepted for the pilot and to be reviewed with pilot data: `%` is dropped (`10% off` becomes `10 off`); a comma decimal becomes two numbers (`1,5 kg` becomes `1 5 kg`); a fraction loses its slash (`1/2 kg` becomes `1 2 kg`, and N3 flags the fraction separately); hyphens and slashes become spaces (`peri-peri` becomes `peri peri`); an `x` between digits is spaced, so a model code such as `a2x3` becomes `a2 x 3`; only dots inside dotted unit abbreviations are joined, so other abbreviations are split (`e.g.` becomes `e g`); a unit that is not in the unit table is not recognised, so it is not split from its number; accented Latin letters are kept as letters but count as separators for unit boundaries.
-- pandamart titles are Latin script only so far, so the planned cross-script stratum of about 15 percent of the sampled pairs cannot be filled from pandamart alone. It needs Chaldal or another source with Bangla-script titles.
+- pandamart titles are Latin script only so far, so the planned cross-script stratum of about 15 percent of the sampled pairs cannot be filled from pandamart alone. It needs Chaldal or another source with Bangla-script titles. (Superseded on 2026-11-08: Chaldal is excluded; see the 2026-11-08 entry.)
 - Project-level risk: no Bangla-script titles have been seen so far. If the final sources have none, the project framing must change from cross-script matching to spelling variation within Latin script. That would affect the pair sampling strata, the `cross_script` tag, the A2 error analysis by script and the paper. The owner is checking foodpanda's Bangla mode and will check Chaldal when it is available.
 
 ## 2026-11-06
@@ -135,13 +135,15 @@
 ### Done
 
 - Confirmed the DVC remote by the owner's checks: Google Drive for desktop has finished uploading, and all three files are on Google Drive's servers with the expected names and sizes (2805, 150 and 0 bytes). The folder is private, with only the owner's account as owner and no link sharing. The remote copy is therefore a real backup of `data/raw`. Files in `local/` are still not under DVC.
-- Prepared a plan, not yet built, for the validator of the labelled files (`src/label/validate.py`, with shared definitions in `src/label/records.py`). Building waits for the owner's approval.
+- Replaced the Chaldal entry in `docs/sources.md` with the owner's check of 2026-11-08. Chaldal is excluded: automated collection is not allowed, redistribution is not allowed, and manual collection is explicitly excluded by section 6.2 of its terms. It is usable only with written permission from Chaldal PLC.
+- Only one usable source remains, pandamart. Shwapno, Daraz and Chaldal are all excluded by their terms. Pairs must come from two different shops, so cross-shop pairs cannot be built from the sources available, and the data plan must change. The owner will decide the new direction.
+- Prepared a plan, not yet built, for the validator of the labelled files (`src/label/validate.py`, with shared definitions in `src/label/records.py`). It is paused together with all other new building.
 
 ### Next
 
-- Approve the plan for the validator of the labelled files, then build it with its tests.
-- Revisit N5 (promotional words) and the cross-script stratum once a second source is available.
+- Paused: no new building, including the validator of the labelled files, until the owner decides the new direction.
+- Once the direction is decided, update what assumes two or more sources: the A1 description and the project framing in `CLAUDE.md`; the entry on the number of sources in `docs/dataset_card_notes.md`; the definition of a pair as two listings from different shops in `docs/labelling_guidelines.md`; the pair generation and sampling plan, including the cross-script stratum; the cross-source rule in the plan for the labelled-data validator; and the framing of the paper.
 
 ### Open questions
 
-- Only one source (pandamart) is cleared so far, and pairs must come from two different sources, so no real labelled file can be valid yet. The labelling code is developed and tested on invented data.
+- The data plan: with one usable source, there are no cross-shop pairs and, so far, no Bangla-script titles. The owner has to decide whether and how the project continues, for example with another source, written permission from a shop, or a different framing. Nothing new is built until then.
