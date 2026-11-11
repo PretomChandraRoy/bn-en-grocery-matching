@@ -426,7 +426,7 @@ def _check_price(value: str, number: int, result: ValidationResult) -> None:
         result.error("must be greater than zero", row=number, column="price_bdt")
 
 
-def _has_bangla_letters(text: str) -> bool:
+def has_bangla_letters(text: str) -> bool:
     """Return True if the text contains a Bangla letter or mark (digits do not count)."""
     return any(
         ord(char) in _BANGLA_BLOCK and unicodedata.category(char)[0] in "LM" for char in text
@@ -439,7 +439,7 @@ def _script_problem(script: str, title: str) -> str | None:
     Only what can be decided from the characters is checked. Whether a Latin title is english or
     romanised depends on the meaning of its words, so that is not checked.
     """
-    has_bangla = _has_bangla_letters(title)
+    has_bangla = has_bangla_letters(title)
     latin_words = [
         word for word in _LATIN_WORD.findall(title) if word.lower() not in _IGNORED_LATIN_WORDS
     ]
@@ -489,28 +489,44 @@ def _check_title(title: str, number: int, result: ValidationResult) -> None:
         )
 
 
+def parse_timestamp(value: str, now: datetime) -> datetime:
+    """Parse a local timestamp with its UTC offset, such as 2026-11-05T19:30:00+06:00.
+
+    The form is fixed: date, "T", time with seconds, and an offset. This is the form of
+    collected_at and of the timestamps in the labelled files.
+
+    Args:
+        value: The text to parse.
+        now: The current time, with a time zone. A timestamp after it is in the future.
+
+    Returns:
+        The moment, with its offset.
+
+    Raises:
+        ValueError: If the text has the wrong form, is not a real date and time, or is in the
+            future. The message names the value with ascii() and says what is wrong.
+    """
+    if not _COLLECTED_AT.fullmatch(value):
+        raise ValueError(f"{ascii(value)} must have the form 2026-11-05T19:30:00+06:00")
+    try:
+        moment = datetime.fromisoformat(value)
+    except ValueError:
+        raise ValueError(f"{ascii(value)} is not a real date and time") from None
+    if moment > now:
+        raise ValueError(f"{ascii(value)} is in the future")
+    return moment
+
+
 def _check_collected_at(
     value: str, number: int, result: ValidationResult, now: datetime
 ) -> str | None:
     """Check collected_at, and return its day as YYYYMMDD if it is valid."""
     if not value:
         return None
-    if not _COLLECTED_AT.fullmatch(value):
-        result.error(
-            f"{ascii(value)} must have the form 2026-11-05T19:30:00+06:00",
-            row=number,
-            column="collected_at",
-        )
-        return None
     try:
-        moment = datetime.fromisoformat(value)
-    except ValueError:
-        result.error(
-            f"{ascii(value)} is not a real date and time", row=number, column="collected_at"
-        )
-        return None
-    if moment > now:
-        result.error(f"{ascii(value)} is in the future", row=number, column="collected_at")
+        parse_timestamp(value, now)
+    except ValueError as error:
+        result.error(str(error), row=number, column="collected_at")
         return None
     return value[:10].replace("-", "")
 

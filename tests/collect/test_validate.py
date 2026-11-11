@@ -13,7 +13,15 @@ from pathlib import Path
 
 import pytest
 
-from src.collect.validate import COLUMNS, REQUIRED_COLUMNS, ValidationResult, main, validate_file
+from src.collect.validate import (
+    COLUMNS,
+    REQUIRED_COLUMNS,
+    ValidationResult,
+    has_bangla_letters,
+    main,
+    parse_timestamp,
+    validate_file,
+)
 from tests.helpers import bn
 
 NOW = datetime(2026, 11, 6, 12, 0, tzinfo=UTC)
@@ -545,6 +553,68 @@ def test_a_meenabazar_listing_already_in_data_raw_cannot_be_collected_again(
     (raw / "meenabazar_20261101.csv").write_bytes(csv_bytes([make_meena_row("40001")]))
     result = validate(tmp_path, csv_bytes([make_meena_row("40001")]))
     assert "already in data/raw/meenabazar_20261101.csv" in errors(result)[0]
+
+
+# The two helpers that the labelled-data code also uses.
+
+BANGLA_FIVE = bn(0x09EB)  # ৫
+VOWEL_SIGN_AA = bn(0x09BE)  # ◌া
+VIRAMA = bn(0x09CD)  # ◌্
+
+
+@pytest.mark.parametrize(
+    ("value", "moment"),
+    [
+        ("2026-11-05T19:30:00+06:00", datetime(2026, 11, 5, 13, 30, tzinfo=UTC)),
+        ("2026-11-06T17:59:59+06:00", datetime(2026, 11, 6, 11, 59, 59, tzinfo=UTC)),
+        ("2026-11-05T10:00:00-05:00", datetime(2026, 11, 5, 15, 0, tzinfo=UTC)),
+    ],
+)
+def test_parse_timestamp_returns_the_moment_with_its_offset(value: str, moment: datetime) -> None:
+    parsed = parse_timestamp(value, NOW)
+    assert parsed == moment
+    assert parsed.utcoffset() is not None
+
+
+@pytest.mark.parametrize(
+    ("value", "message"),
+    [
+        ("2026-11-05 19:30:00+06:00", "must have the form"),
+        ("2026-11-05T19:30:00", "must have the form"),
+        ("2026-11-05T19:30:00Z", "must have the form"),
+        ("", "must have the form"),
+        ("2026-02-30T10:00:00+06:00", "not a real date"),
+        ("2026-11-05T25:00:00+06:00", "not a real date"),
+        ("2026-11-06T18:00:01+06:00", "in the future"),
+    ],
+)
+def test_parse_timestamp_rejects_bad_values(value: str, message: str) -> None:
+    with pytest.raises(ValueError, match=message):
+        parse_timestamp(value, NOW)
+
+
+def test_parse_timestamp_accepts_the_present_moment() -> None:
+    # NOW is 12:00 UTC on 6 November, which is 18:00 at +06:00.
+    assert parse_timestamp("2026-11-06T18:00:00+06:00", NOW) == NOW
+
+
+@pytest.mark.parametrize(
+    ("text", "expected"),
+    [
+        (CHAL, True),
+        (f"Test {CHAL} 1 kg", True),
+        (KEJI, True),
+        (VOWEL_SIGN_AA, True),
+        (VIRAMA, True),
+        ("Test Rice 1 kg", False),
+        ("", False),
+        (BANGLA_FIVE, False),
+        (f"Test {BANGLA_FIVE} kg", False),
+        (RUPEE, False),
+    ],
+)
+def test_has_bangla_letters(text: str, expected: bool) -> None:
+    assert has_bangla_letters(text) is expected
 
 
 # Files inside data/raw.
