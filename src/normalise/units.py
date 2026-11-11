@@ -6,6 +6,10 @@ grows from the pilot report of numbers followed by words that were not recognise
 
 Every key must already be in the form produced by clean_unicode (NFC, no invisible
 characters). The Bangla keys are written as escapes in the code.
+
+Each unit also has one symbol (kg, g, l or ml), the form that title normalisation writes in
+place of every spelling in its group. The symbols are themselves keys of the table, so a
+normalised title still reads as a title with known units.
 """
 
 import re
@@ -20,16 +24,19 @@ class Unit:
     Attributes:
         kind: "weight" (base unit: gram) or "volume" (base unit: millilitre).
         factor: How many base units one of this unit is.
+        symbol: The one spelling (a Latin key of the table) that title normalisation writes for
+            every spelling of this unit.
     """
 
     kind: Literal["weight", "volume"]
     factor: int
+    symbol: str
 
 
-_KILOGRAM = Unit("weight", 1000)
-_GRAM = Unit("weight", 1)
-_LITRE = Unit("volume", 1000)
-_MILLILITRE = Unit("volume", 1)
+_KILOGRAM = Unit("weight", 1000, "kg")
+_GRAM = Unit("weight", 1, "g")
+_LITRE = Unit("volume", 1000, "l")
+_MILLILITRE = Unit("volume", 1, "ml")
 
 UNITS: dict[str, Unit] = {
     # Kilogram (1000 g).
@@ -78,6 +85,30 @@ def lookup_unit(text: str) -> Unit | None:
         The matching Unit, or None if the word is not in the table.
     """
     return UNITS.get(text.strip().lower())
+
+
+def symbols_by_dot_free_unit(units: dict[str, Unit] = UNITS) -> dict[str, str]:
+    """Return the symbol for each unit spelling, with the dots of the spelling removed.
+
+    Title normalisation removes the dots inside unit abbreviations before it looks for a unit,
+    so "ltr." is looked up as "ltr". This table is the single source for the replacement.
+
+    Args:
+        units: The unit table; tests pass a changed copy.
+
+    Returns:
+        A dictionary from each dot-free spelling to its symbol.
+
+    Raises:
+        ValueError: If two spellings become the same once their dots are removed but have
+            different symbols, which would make the replacement ambiguous.
+    """
+    symbols: dict[str, str] = {}
+    for key, unit in units.items():
+        word = key.replace(".", "")
+        if symbols.setdefault(word, unit.symbol) != unit.symbol:
+            raise ValueError(f"the unit spellings that become {word!r} have different symbols")
+    return symbols
 
 
 def _either_case(unit: str) -> str:

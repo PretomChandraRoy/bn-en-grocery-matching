@@ -19,7 +19,10 @@ The steps run in this fixed order, and the order matters:
     signs and the virama are marks, so they are kept.
  7. "x" between two digits gets a space on each side ("2x500" becomes "2 x 500").
  8. A space is put between a number and a unit ("500ml" becomes "500 ml"), unless the number
-    follows a word character, so "7up" and "b12" are not split.
+    follows a word character, so "7up" and "b12" are not split. The unit word is also replaced
+    by the symbol of its unit in the table of units (units.py): kg, g, l or ml. "500gm" becomes
+    "500 g", "2 Ltr." becomes "2 l" and a Bangla unit word becomes its Latin symbol. Only a
+    unit word that directly follows a number is replaced, so "gram flour" is left alone.
  9. Runs of spaces are collapsed and the ends are trimmed.
 
 Steps that delete or replace characters come first and steps that insert spaces come last, so
@@ -33,7 +36,7 @@ import unicodedata
 
 from src.normalise.checks import require_str
 from src.normalise.patterns import BOUNDARY_AFTER, WORD_CHARS
-from src.normalise.units import UNITS
+from src.normalise.units import UNITS, symbols_by_dot_free_unit
 
 TIMES_SIGN = "\u00d7"  # U+00D7, the multiplication sign
 RIGHT_SINGLE_QUOTE = "\u2019"  # U+2019, the typographic apostrophe
@@ -50,8 +53,9 @@ def _alternation(units: set[str]) -> str:
     return "|".join(re.escape(unit) for unit in sorted(units, key=len, reverse=True))
 
 
-# Every unit with its dots removed ("ltr." becomes "ltr").
-_DOT_FREE_UNITS = {unit.replace(".", "") for unit in UNITS}
+# The symbol for every unit with its dots removed ("ltr." becomes "ltr", whose symbol is "l").
+_SYMBOL_OF_UNIT = symbols_by_dot_free_unit()
+_DOT_FREE_UNITS = set(_SYMBOL_OF_UNIT)
 # The units written with a dot inside, such as the dotted Bangla abbreviations of kg and ml.
 # Their final dot, if they have one, is optional.
 _DOTTED_UNITS = {unit.rstrip(".") for unit in UNITS if "." in unit.rstrip(".")}
@@ -116,5 +120,7 @@ def clean_text(text: str) -> str:
     text = _APOSTROPHE.sub("", text)
     text = _keep_letters_marks_and_numbers(text)
     text = _X_BETWEEN_DIGITS.sub(" x ", text)
-    text = _NUMBER_BEFORE_UNIT.sub(lambda match: f"{match.group(1)} {match.group(2)}", text)
+    text = _NUMBER_BEFORE_UNIT.sub(
+        lambda match: f"{match.group(1)} {_SYMBOL_OF_UNIT[match.group(2)]}", text
+    )
     return " ".join(text.split())

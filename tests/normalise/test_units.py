@@ -9,13 +9,13 @@ import re
 import pytest
 
 from src.normalise.unicode_clean import clean_unicode
-from src.normalise.units import UNITS, Unit, lookup_unit, unit_alternation
+from src.normalise.units import UNITS, Unit, lookup_unit, symbols_by_dot_free_unit, unit_alternation
 from tests.helpers import bn
 
-KILOGRAM = Unit("weight", 1000)
-GRAM = Unit("weight", 1)
-LITRE = Unit("volume", 1000)
-MILLILITRE = Unit("volume", 1)
+KILOGRAM = Unit("weight", 1000, "kg")
+GRAM = Unit("weight", 1, "g")
+LITRE = Unit("volume", 1000, "l")
+MILLILITRE = Unit("volume", 1, "ml")
 
 LATIN_UNITS = {
     **dict.fromkeys(["kg", "kgs"], KILOGRAM),
@@ -133,3 +133,48 @@ def test_dots_in_units_are_matched_literally() -> None:
     pattern = re.compile(f"(?:{unit_alternation()})")
     assert pattern.fullmatch("ltr.")
     assert pattern.fullmatch("ltrX") is None
+
+
+# Symbols: the one spelling that title normalisation writes for a unit.
+
+
+def test_each_unit_group_has_exactly_one_symbol() -> None:
+    symbols_of_group: dict[tuple[str, int], set[str]] = {}
+    for unit in UNITS.values():
+        symbols_of_group.setdefault((unit.kind, unit.factor), set()).add(unit.symbol)
+    assert symbols_of_group == {
+        ("weight", 1000): {"kg"},
+        ("weight", 1): {"g"},
+        ("volume", 1000): {"l"},
+        ("volume", 1): {"ml"},
+    }
+
+
+def test_the_four_groups_have_four_different_symbols() -> None:
+    assert sorted({unit.symbol for unit in UNITS.values()}) == ["g", "kg", "l", "ml"]
+
+
+def test_every_symbol_is_a_latin_key_of_the_table_for_its_own_unit() -> None:
+    for unit in UNITS.values():
+        assert unit.symbol.isascii()
+        assert UNITS[unit.symbol] == unit
+
+
+def test_symbols_by_dot_free_unit_covers_every_key_with_its_symbol() -> None:
+    symbols = symbols_by_dot_free_unit()
+    assert set(symbols) == {key.replace(".", "") for key in UNITS}
+    for key, unit in UNITS.items():
+        assert symbols[key.replace(".", "")] == unit.symbol
+    assert symbols["ltr"] == "l"
+    assert symbols["gm"] == "g"
+
+
+def test_spellings_that_differ_only_by_a_dot_may_share_a_symbol() -> None:
+    table = {"ltr": LITRE, "ltr.": LITRE}
+    assert symbols_by_dot_free_unit(table) == {"ltr": "l"}
+
+
+def test_spellings_that_differ_only_by_a_dot_must_not_have_different_symbols() -> None:
+    table = {"ltr": LITRE, "ltr.": Unit("volume", 1000, "ltr")}
+    with pytest.raises(ValueError, match="different symbols"):
+        symbols_by_dot_free_unit(table)

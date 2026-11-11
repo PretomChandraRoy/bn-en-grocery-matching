@@ -52,7 +52,7 @@ def test_report_row_applies_n1_to_n4() -> None:
     result = report_row("f.csv", make_row("4", f"{CHAL} {BANGLA_ONE} {KEJI}"))
     assert result.size.status == "ok"
     assert result.size.amount == Decimal(1000)
-    assert result.title_norm == f"{CHAL} 1 {KEJI}"
+    assert result.title_norm == f"{CHAL} 1 kg"
     assert result.in_scope
 
 
