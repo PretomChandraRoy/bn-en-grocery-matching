@@ -1,0 +1,5 @@
+outs:
+- md5: 9adbf4e37f068f87646b35ca464a4b52
+  size: 9426
+  hash: md5
+  path: candidates.csv
