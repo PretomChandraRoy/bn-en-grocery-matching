@@ -6,17 +6,18 @@ bn-en-grocery-matching is an entity resolution system that decides whether two g
 
 The problem is hard for these reasons:
 
-- Listings mix Bangla script, romanised Bangla and English. The same rice may appear as "Chinigura Rice", "Chinigura Chal" or "চিনিগুড়া চাল".
-- Pack sizes and units vary: "1 kg", "1000 gm", "১ কেজি", "500ml", "0.5 L".
-- Brand names are spelt inconsistently or are missing, and titles contain promotional words such as "Combo" or "Offer".
-- Text contains Bangla digits (০ to ৯), inconsistent Unicode normalisation and zero-width characters.
+- Listing titles differ in wording, spelling and sometimes script. In the sources collected so far (pandamart and meenabazar) the titles are in Latin script: English, sometimes with romanised Bangla words such as chal, dal or tel. Bangla-script titles are possible but have not been seen. The same rice may appear as "Chinigura Rice" or "Chinigura Chal".
+- Shops title the same product differently: brand and brand-line words move or are dropped, word order and abbreviations differ, capitalisation differs (title case or capitals), English and romanised spellings vary (for example Chili and Chilli, Moshur and Masoor), and units are spelt differently (g and gm, L and ltr). One shop gives the brand as a separate field, which often holds the manufacturer rather than the brand; the other gives it only in the title.
+- Pack sizes and units vary: "1 kg", "1000 gm", "500ml", "0.5 L" (and, if Bangla-script titles are collected, "১ কেজি").
+- Brand names are spelt inconsistently or are missing, and titles may contain promotional words such as "Combo" or "Offer" (none were found in the titles collected so far).
+- Text may contain Bangla digits (০ to ৯), inconsistent Unicode normalisation and zero-width characters. The normalisation code handles them, although the collected titles have not shown them.
 
 ## Stages
 
 | Stage | Period | Scope |
 |---|---|---|
-| A1 Data (CURRENT) | Nov 2026 to Mar 2027 | Collect listings from two or more sources, label about 2,000 candidate pairs, write a dataset card |
-| A2 Models | Apr to Jun 2027 | Blocking, rule-based baseline, learned similarity (gradient boosting on string features, then multilingual sentence embeddings), evaluation with precision, recall, F1 and pair completeness, error analysis by script |
+| A1 Data (CURRENT) | Nov 2026 to Mar 2027 | Collect listings from two sources (pandamart and meenabazar), label about 2,000 candidate pairs, write a dataset card |
+| A2 Models | Apr to Jun 2027 | Blocking, rule-based baseline, learned similarity (gradient boosting on string features, then multilingual sentence embeddings), evaluation with precision, recall, F1 and pair completeness, error analysis by script (english against romanised, and Bangla-script titles if any are collected) and by brand-line, unit and capitalisation variation |
 | A3 Production | Jul to Sep 2027 | FastAPI and Docker serving, MLflow model registry, GitHub Actions CI/CD, Prometheus and Grafana monitoring, Evidently drift detection, drift-triggered retraining, canary rollout |
 | A4 Paper | Aug to Oct 2027 | Dataset or resource paper |
 
@@ -26,10 +27,11 @@ Build nothing for A2 to A4 yet, but keep every design choice compatible with the
 
 Listing record (one row per listing):
 
-- `source`: short source name, for example "chaldal"
+- `source`: short source name, for example "pandamart" or "meenabazar"
 - `listing_id`: the source's own identifier
 - `title_raw`: exactly as displayed; never modified after collection
-- `brand`, `size_value`, `size_unit`: may be empty
+- `brand`: the shop's own brand field, exactly as shown, when the shop has one (meenabazar; it often holds the manufacturer and can read "No Brand"); blank when it has none (pandamart)
+- `size_value`, `size_unit`: filled only when the shop shows them as separate fields; blank for both current sources
 - `price_bdt`
 - `category`: one of the four project categories: `rice`, `lentils`, `cooking_oil`, `spices`
 - `source_category`: the shop's own category label; optional, may be empty

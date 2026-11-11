@@ -157,3 +157,10 @@
 - To supply for the `meenabazar` entry in `docs/sources.md`: the exact delivery location used for collection, and the exact URL of the terms page. Still pending: the owner's message of 2026-11-08 left both values as the template text.
 - Written permission to publish listing text is needed for both sources (pandamart and meenabazar) before the public dataset can contain titles.
 - The seller is not recorded in the 12 listing columns, so 'only items sold by Meena Bazar itself' (and pandamart's own store) rests on collection discipline alone.
+
+## 2026-11-11
+
+### Done
+
+- Set up the repository on the owner's desktop (reported by the owner): `data/raw` restored with `dvc pull`, the four files in `local/` restored, and `pytest` reported 641 passed.
+- The owner approved the framing wording changes proposed on 2026-11-08 (in a session on the owner's laptop), and they were applied. `CLAUDE.md`: the problem list now describes cross-shop variation in Latin-script titles (Bangla-script titles possible but not seen), the A1 row names the two sources, the A2 row adds error analysis by brand-line, unit and capitalisation variation, the `source` example names pandamart and meenabazar, and the `brand`, `size_value` and `size_unit` lines describe what each source fills in. `docs/dataset_card_notes.md`: the "Number of sources" entry is replaced; new entries cover the absence of Bangla-script titles, the brand field by source, the delivery location (still to be added), and capitalisation and URL slugs; the title-capture entry records that the meenabazar titles were accepted unchecked; and the sampling rationale replaces the cross-script stratum with a wording-variation stratum of about 15 percent. The labelling guidelines and the A2 model choice are unchanged.

@@ -16,7 +16,7 @@ Labellers see the title, brand, size, source and category of each listing, but n
 
 ## Sampling mix and rationale
 
-The pairs offered for labelling are a deliberately non-natural sample, not a random sample of all possible pairs. The planned strata are likely matches, hard negatives, random negatives and a cross-script stratum of about 15 percent. The cross-script stratum is chosen by category, parsed size and price proximity instead of text similarity, because text similarity between Bangla-script and Latin-script titles is close to zero and would otherwise leave cross-script matches under-sampled.
+The pairs offered for labelling are a deliberately non-natural sample, not a random sample of all possible pairs. All pairs are between a pandamart listing and a meenabazar listing. The planned strata are likely matches, hard negatives, random negatives and a wording-variation stratum of about 15 percent. The wording-variation stratum is chosen by category, parsed size and price proximity, but from candidates with low text similarity, because true matches that are worded differently (different word order, brand-line words, abbreviations or spelling) would otherwise be under-sampled.
 
 The final proportions and the reasons for them are to be recorded here once pair generation is built. (Added 2026-11-04; incomplete.)
 
@@ -30,7 +30,23 @@ Cohen's kappa is computed on an overlap sample drawn from the sampled pairs desc
 
 ## Number of sources
 
-Stage A1 collects listings from two or more sources, not the three originally planned. Shwapno and Daraz are excluded because their terms prohibit automated collection and the use of listing content (for Daraz, manual collection as well); see `docs/sources.md`. The pilot may use only pandamart (foodpanda's own grocery shop) and possibly Chaldal, subject to the source checks. Every cross-shop pair then involves the same two shops, so results may not generalise to other shops. (Added 2026-11-04.)
+Stage A1 collects listings from two sources: pandamart (foodpanda's own grocery shop, one store) and meenabazar (Meena Bazar Online, items sold by the shop itself, one fixed delivery location). Shwapno, Daraz and Chaldal are excluded because their terms prohibit collection; see `docs/sources.md`. Every cross-shop pair therefore involves the same two shops, so results may not generalise to other shops. (Added 2026-11-04; replaced 2026-11-11.)
+
+## No Bangla-script titles
+
+Neither source uses Bangla-script titles. The dataset therefore covers cross-shop matching in Latin script: variation in spelling, wording, capitalisation, units and brand-line words, with some romanised Bangla words. It does not measure matching between Bangla script and Latin script. The values `bangla` and `mixed` of `script` and the `cross_script` tag do not occur in the data. (Added 2026-11-11.)
+
+## The brand field differs by source
+
+meenabazar gives the brand as a separate field, copied exactly as shown. It often holds the manufacturer rather than the brand and can read "No Brand". pandamart has no brand field, so its brand appears only in the title. Labellers read the brand from the title for both. (Added 2026-11-11.)
+
+## Delivery location
+
+Prices of perishable items on meenabazar vary with the delivery location. All meenabazar listings were collected with the same location (to be added). (Added 2026-11-11.)
+
+## Capitalisation and URL slugs
+
+meenabazar shows product headings as stored, sometimes in title case and sometimes in capitals, and they are copied as shown. A URL slug can disagree with the title; the title is authoritative. (Added 2026-11-11.)
 
 ## Redistribution of listing text
 
@@ -38,4 +54,4 @@ For pandamart, the redistribution of listing text is unclear (see `docs/sources.
 
 ## How the titles were captured
 
-The 11 pilot titles from pandamart were transcribed by hand from screenshots, not copied from the page, so they may contain small errors, for example in spaces or apostrophes. They were accepted for the pilot without being checked against the website. The 11 pilot titles from meenabazar were transcribed from screenshots in the same way, so they may contain the same kinds of small errors. Every later listing is copied directly from the page with Ctrl+C and pasted as plain text. (Added 2026-11-07; extended 2026-11-08.)
+The 11 pilot titles from pandamart were transcribed by hand from screenshots, not copied from the page, so they may contain small errors, for example in spaces or apostrophes. They were accepted for the pilot without being checked against the website. The 11 pilot titles from meenabazar were transcribed from screenshots in the same way, so they may contain the same kinds of small errors. Like the pandamart titles, the 11 meenabazar titles were accepted without being checked against the website. Every later listing is copied directly from the page with Ctrl+C and pasted as plain text. (Added 2026-11-07; extended 2026-11-08 and 2026-11-11.)
