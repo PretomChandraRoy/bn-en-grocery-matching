@@ -7,6 +7,7 @@ points (see tests/helpers.py).
 import codecs
 import csv
 import io
+from collections.abc import Callable
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -25,6 +26,9 @@ KEJI = bn(0x0995, 0x09C7, 0x099C, 0x09BF)  # কেজি
 RUPEE = bn(0x09F3)  # ৳
 ZERO_WIDTH_SPACE = bn(0x200B)
 RIGHT_QUOTE = bn(0x2019)
+BANGLA_4001 = bn(0x09EA, 0x09E6, 0x09E6, 0x09E7)  # ৪০০১
+MEENA = "https://meenabazaronline.com/product/"
+SLUG = "TEST-BRAND-SAMPLE-RICE-2KG"
 
 
 def make_row(listing_id: str = "1001", **changes: str) -> dict[str, str]:
@@ -42,6 +46,20 @@ def make_row(listing_id: str = "1001", **changes: str) -> dict[str, str]:
         "url": STORE + listing_id,
         "collected_at": "2026-11-05T19:30:00+06:00",
     }
+    row.update(changes)
+    return row
+
+
+def make_meena_row(listing_id: str = "40001", **changes: str) -> dict[str, str]:
+    row = make_row(
+        listing_id,
+        source="meenabazar",
+        title_raw="TEST BRAND SAMPLE RICE 2KG",
+        brand="Test Foods Ltd",
+        price_bdt="420.00",
+        source_category="",
+        url=f"{MEENA}{SLUG}/{listing_id}",
+    )
     row.update(changes)
     return row
 
@@ -342,6 +360,193 @@ def test_warnings_do_not_make_a_file_invalid(
     assert any(expected in message for message in warnings(result))
 
 
+# meenabazar: listing_id and url.
+
+
+@pytest.mark.parametrize(
+    ("listing_id", "url"),
+    [
+        pytest.param("4001", f"{MEENA}{SLUG}/4001", id="hyphenated-capitals-4-digits"),
+        pytest.param("40001", f"{MEENA}{SLUG}/40001", id="hyphenated-capitals-5-digits"),
+        pytest.param("4001", f"{MEENA}TestBrandSampleLentil500gm/4001", id="mixed-case-4-digits"),
+        pytest.param("40001", f"{MEENA}TestBrandSampleLentil500gm/40001", id="mixed-case-5-digits"),
+        pytest.param("40001", f"{MEENA}Test-Oil-1.5ltr/40001", id="slug-with-a-dot"),
+    ],
+)
+def test_a_valid_meenabazar_file_has_no_problems(tmp_path: Path, listing_id: str, url: str) -> None:
+    result = validate(tmp_path, csv_bytes([make_meena_row(listing_id, url=url)]))
+    assert result.problems == []
+    assert result.accepted_name == "meenabazar_20261105.csv"
+
+
+@pytest.mark.parametrize(
+    "url",
+    [
+        pytest.param(f"http://meenabazaronline.com/product/{SLUG}/40001", id="http"),
+        pytest.param(f"https://www.meenabazaronline.com/product/{SLUG}/40001", id="www"),
+        pytest.param(f"{MEENA}{SLUG}/40001?ref=home", id="query-string"),
+        pytest.param(f"{MEENA}{SLUG}/40001?", id="empty-query-string"),
+        pytest.param(f"{MEENA}{SLUG}/40001#reviews", id="fragment"),
+        pytest.param(f"{MEENA}{SLUG}/40001/", id="trailing-slash"),
+        pytest.param(f"{MEENA}{SLUG}/40001/reviews", id="extra-path-after-the-id"),
+        pytest.param(f"{MEENA}extra/{SLUG}/40001", id="extra-path-before-the-slug"),
+        pytest.param(f"{MEENA}{SLUG}", id="missing-id"),
+        pytest.param(f"{MEENA}{SLUG}/", id="missing-id-with-slash"),
+        pytest.param(f"{MEENA}40001", id="missing-slug"),
+        pytest.param(f"{MEENA}/40001", id="empty-slug"),
+        pytest.param(f"{MEENA}TEST BRAND RICE/40001", id="space-in-slug"),
+        pytest.param(f"{MEENA}TEST\tBRAND/40001", id="tab-in-slug"),
+        pytest.param(f"{MEENA}TEST?BRAND/40001", id="question-mark-in-slug"),
+        pytest.param(f"{MEENA}TEST#BRAND/40001", id="hash-in-slug"),
+        pytest.param(f"{MEENA}{SLUG}/4000a", id="non-numeric-id"),
+        pytest.param(f"{MEENA}{SLUG}/{BANGLA_4001}", id="bangla-digit-id"),
+        pytest.param(f"https://meenabazar.com/product/{SLUG}/40001", id="wrong-host"),
+        pytest.param(f"https://meenabazaronline.com.bd/product/{SLUG}/40001", id="longer-host"),
+        pytest.param(f"https://shop.meenabazaronline.com/product/{SLUG}/40001", id="subdomain"),
+        pytest.param(f"https://MeenaBazarOnline.com/product/{SLUG}/40001", id="host-case"),
+        pytest.param(f"https://meenabazaronline.com/products/{SLUG}/40001", id="products"),
+        pytest.param(STORE + "40001", id="a-pandamart-url"),
+    ],
+)
+def test_meenabazar_url_must_be_an_exact_product_page(tmp_path: Path, url: str) -> None:
+    result = validate(tmp_path, csv_bytes([make_meena_row("40001", url=url)]))
+    assert errors(result) == [
+        "error (row 2, url): is not a product page of the store allowed in docs/sources.md"
+    ]
+
+
+def test_meenabazar_listing_id_must_equal_the_id_in_the_url(tmp_path: Path) -> None:
+    result = validate(tmp_path, csv_bytes([make_meena_row("40001", url=f"{MEENA}{SLUG}/40002")]))
+    assert errors(result) == [
+        "error (row 2, url): the product ID in the URL (40002) differs from listing_id '40001'"
+    ]
+
+
+def test_a_meenabazar_url_is_not_accepted_for_pandamart(tmp_path: Path) -> None:
+    result = validate(tmp_path, csv_bytes([make_row("40001", url=f"{MEENA}{SLUG}/40001")]))
+    assert any("not a product page" in message for message in errors(result))
+
+
+@pytest.mark.parametrize(
+    "listing_id",
+    [
+        pytest.param("4000a", id="letter"),
+        pytest.param("40 01", id="inner-space"),
+        pytest.param("-4001", id="sign"),
+        pytest.param("4001.0", id="decimal"),
+        pytest.param(BANGLA_4001, id="bangla-digits"),
+        pytest.param(SLUG, id="the-slug"),
+    ],
+)
+def test_meenabazar_listing_id_must_be_digits_only(tmp_path: Path, listing_id: str) -> None:
+    result = validate(tmp_path, csv_bytes([make_meena_row(listing_id, url=f"{MEENA}{SLUG}/40001")]))
+    assert any(
+        message.startswith("error (row 2, listing_id)") and "does not have the form" in message
+        for message in errors(result)
+    )
+
+
+# meenabazar: prices, under the one generic price rule.
+
+
+@pytest.mark.parametrize("price", ["420.00", "1000.00", "30.50", "30.5", "30"])
+def test_valid_meenabazar_prices(tmp_path: Path, price: str) -> None:
+    assert validate(tmp_path, csv_bytes([make_meena_row(price_bdt=price)])).errors == []
+
+
+@pytest.mark.parametrize(
+    "price", ["1,000.00", "420.000", "Tk 420.00", RUPEE + "420.00", "420.", ".50", "420.00 "]
+)
+def test_invalid_meenabazar_prices(tmp_path: Path, price: str) -> None:
+    result = validate(tmp_path, csv_bytes([make_meena_row(price_bdt=price)]))
+    assert any("must be a bare number" in message for message in errors(result))
+
+
+def test_a_meenabazar_price_of_zero_is_an_error(tmp_path: Path) -> None:
+    result = validate(tmp_path, csv_bytes([make_meena_row(price_bdt="0.00")]))
+    assert errors(result) == ["error (row 2, price_bdt): must be greater than zero"]
+
+
+# Per-source warnings on brand, size_value and size_unit; they do not make a file invalid.
+
+
+@pytest.mark.parametrize("brand", ["", " "])
+def test_an_empty_meenabazar_brand_is_a_warning(tmp_path: Path, brand: str) -> None:
+    result = validate(tmp_path, csv_bytes([make_meena_row(brand=brand)]))
+    assert result.errors == []
+    assert result.accepted_name == "meenabazar_20261105.csv"
+    assert warnings(result) == [
+        "warning (row 2, brand): is empty, but meenabazar shows a Brand field; copy it as shown "
+        '("No Brand" is a valid value)'
+    ]
+
+
+def test_no_brand_is_a_valid_meenabazar_brand(tmp_path: Path) -> None:
+    assert validate(tmp_path, csv_bytes([make_meena_row(brand="No Brand")])).problems == []
+
+
+def test_a_filled_in_pandamart_brand_is_a_warning(tmp_path: Path) -> None:
+    result = validate(tmp_path, csv_bytes([make_row(brand="Test Brand")]))
+    assert result.errors == []
+    assert result.accepted_name == "pandamart_20261105.csv"
+    assert warnings(result) == [
+        "warning (row 2, brand): is filled in, but pandamart has no brand field; leave it blank"
+    ]
+
+
+@pytest.mark.parametrize("make", [make_row, make_meena_row], ids=["pandamart", "meenabazar"])
+@pytest.mark.parametrize(("column", "value"), [("size_value", "500"), ("size_unit", "gm")])
+def test_a_filled_in_size_field_is_a_warning(
+    tmp_path: Path, make: Callable[..., dict[str, str]], column: str, value: str
+) -> None:
+    row = make(**{column: value})
+    result = validate(tmp_path, csv_bytes([row]))
+    assert result.errors == []
+    assert result.accepted_name is not None
+    assert (
+        f"warning (row 2, {column}): is filled in, but {row['source']} has no separate size "
+        "field; leave it blank"
+    ) in warnings(result)
+
+
+def test_both_size_fields_filled_in_give_one_warning_each(tmp_path: Path) -> None:
+    result = validate(tmp_path, csv_bytes([make_meena_row(size_value="500", size_unit="gm")]))
+    assert [problem.column for problem in result.warnings] == ["size_value", "size_unit"]
+
+
+# meenabazar: one source per file, and duplicates.
+
+
+def test_a_file_mixing_pandamart_and_meenabazar_is_an_error(tmp_path: Path) -> None:
+    result = validate(tmp_path, csv_bytes([make_row("1001"), make_meena_row("40001")]))
+    assert errors(result) == [
+        "error: the file holds rows from more than one source: meenabazar, pandamart"
+    ]
+    assert result.accepted_name is None
+
+
+def test_a_meenabazar_listing_id_may_appear_only_once_in_a_file(tmp_path: Path) -> None:
+    result = validate(tmp_path, csv_bytes([make_meena_row("40001"), make_meena_row("40001")]))
+    assert errors(result) == ["error (row 3, listing_id): listing_id '40001' also appears in row 2"]
+
+
+def test_the_same_listing_id_in_another_source_is_not_a_duplicate(tmp_path: Path) -> None:
+    raw = tmp_path / "raw"
+    raw.mkdir()
+    (raw / "pandamart_20261101.csv").write_bytes(csv_bytes([make_row("4001")]))
+    assert validate(tmp_path, csv_bytes([make_meena_row("4001")])).errors == []
+
+
+def test_a_meenabazar_listing_already_in_data_raw_cannot_be_collected_again(
+    tmp_path: Path,
+) -> None:
+    raw = tmp_path / "raw"
+    raw.mkdir()
+    (raw / "meenabazar_20261101.csv").write_bytes(csv_bytes([make_meena_row("40001")]))
+    result = validate(tmp_path, csv_bytes([make_meena_row("40001")]))
+    assert "already in data/raw/meenabazar_20261101.csv" in errors(result)[0]
+
+
 # Files inside data/raw.
 
 
@@ -386,6 +591,18 @@ def test_accept_copies_the_file_byte_for_byte(
     target = raw / "pandamart_20261105.csv"
     assert target.read_bytes() == path.read_bytes()
     assert "dvc add data/raw" in capsys.readouterr().out
+
+
+def test_accept_names_a_meenabazar_file_after_its_source_and_last_day(tmp_path: Path) -> None:
+    rows = [
+        make_meena_row("4001", collected_at="2026-11-06T11:00:00+06:00"),
+        make_meena_row("40001", collected_at="2026-11-05T19:30:00+06:00"),
+    ]
+    path = write(tmp_path, csv_bytes(rows), name="meenabazar_pilot.csv")
+    raw = tmp_path / "raw"
+    assert main(["--accept", str(path), "--raw-dir", str(raw)], now=NOW) == 0
+    assert [target.name for target in raw.iterdir()] == ["meenabazar_20261106.csv"]
+    assert (raw / "meenabazar_20261106.csv").read_bytes() == path.read_bytes()
 
 
 def test_accept_refuses_an_invalid_file(tmp_path: Path) -> None:

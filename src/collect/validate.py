@@ -79,16 +79,22 @@ Severity = Literal["error", "warning"]
 
 @dataclass(frozen=True)
 class SourceRules:
-    """What listing_id and url must look like for one cleared source.
+    """What the fields of a listing must look like for one cleared source.
 
     Attributes:
         listing_id: The pattern that a listing_id must match in full.
         url: The pattern that a product URL must match in full. Its group "id" must equal the
             listing_id.
+        has_brand_field: Whether the shop shows the brand as a separate field. If it does, an
+            empty brand is a warning; if it does not, a filled-in brand is a warning.
+        has_size_fields: Whether the shop shows the size as separate fields. If it does not, a
+            filled-in size_value or size_unit is a warning.
     """
 
     listing_id: re.Pattern[str]
     url: re.Pattern[str]
+    has_brand_field: bool
+    has_size_fields: bool
 
 
 # The sources that docs/sources.md allows. Add a source here only when its entry there allows
@@ -101,6 +107,16 @@ CLEARED_SOURCES: dict[str, SourceRules] = {
             r"category/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/"
             r"product/(?P<id>[0-9]+)"
         ),
+        has_brand_field=False,
+        has_size_fields=False,
+    ),
+    # The slug is free text that can disagree with the title (docs/data_entry_rules.md), so it is
+    # only required to stay within one path segment: no "/", "?", "#" or whitespace.
+    "meenabazar": SourceRules(
+        listing_id=re.compile(r"[0-9]+"),
+        url=re.compile(r"https://meenabazaronline\.com/product/[^/?#\s]+/(?P<id>[0-9]+)"),
+        has_brand_field=True,
+        has_size_fields=False,
     ),
 }
 
@@ -295,6 +311,8 @@ def _check_row(
             column="source",
         )
     _check_listing_and_url(row, number, result, rules)
+    if rules is not None:
+        _check_source_fields(row, number, result, rules)
     _check_price(row["price_bdt"], number, result)
     category = row["category"]
     if category and category not in CATEGORIES:
@@ -357,6 +375,40 @@ def _check_listing_and_url(
             row=number,
             column="url",
         )
+
+
+def _check_source_fields(
+    row: dict[str, str], number: int, result: ValidationResult, rules: SourceRules
+) -> None:
+    """Warn when brand, size_value or size_unit does not fit the fields the shop shows.
+
+    These are warnings, not errors: they point to a likely slip in data entry, but a file with
+    them is still well formed.
+    """
+    source = row["source"]
+    brand = row["brand"].strip()
+    if rules.has_brand_field and not brand:
+        result.warning(
+            f"is empty, but {source} shows a Brand field; copy it as shown "
+            '("No Brand" is a valid value)',
+            row=number,
+            column="brand",
+        )
+    elif not rules.has_brand_field and brand:
+        result.warning(
+            f"is filled in, but {source} has no brand field; leave it blank",
+            row=number,
+            column="brand",
+        )
+    if rules.has_size_fields:
+        return
+    for column in ("size_value", "size_unit"):
+        if row[column].strip():
+            result.warning(
+                f"is filled in, but {source} has no separate size field; leave it blank",
+                row=number,
+                column=column,
+            )
 
 
 def _check_price(value: str, number: int, result: ValidationResult) -> None:

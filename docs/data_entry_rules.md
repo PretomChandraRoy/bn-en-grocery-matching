@@ -46,7 +46,7 @@ The remote folder holds real titles, so it must stay private and must not be sha
 
 ## Rules for each source
 
-`docs/sources.md` says what may be collected from each source and how. These are the entry rules that follow from it.
+`docs/sources.md` says what may be collected from each source and how. These are the entry rules that follow from it. The validator requires a meenabazar URL to be exactly `https://meenabazaronline.com/product/<slug>/<id>`, with no `www`, query string, fragment or trailing slash, where the slug contains no `/`, `?`, `#` or space and `<id>` equals `listing_id`, and it warns, without failing the file, when a meenabazar `brand` is empty ("No Brand" is a valid value), when a pandamart `brand` is filled in, or when `size_value` or `size_unit` is filled in for either source.
 
 ### pandamart
 
