@@ -42,11 +42,11 @@ from collections import Counter
 from collections.abc import Sequence
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
-from decimal import Decimal
 from pathlib import Path
 from typing import Literal
 
 from src.collect.validate import RAW_DIR, Problem, parse_timestamp
+from src.label.features import size_relation
 from src.label.listings import (
     Listing,
     ListingKey,
@@ -172,18 +172,21 @@ class FileResult:
 # The reading of the size parser, compared with the labels.
 
 
+# How the relations of features.size_relation are written in a warning.
+_RELATION_PHRASES = {
+    "same": "equal",
+    "same_total_different_pack": "the same size in different packs",
+    "different_amount": "different sizes",
+    "different_kind": "of different kinds",
+}
+
+
 def _describe(size: SizeResult) -> str:
     """Describe the size N3 read, for example '500 g' or '2 x 500 g'."""
     assert size.amount is not None
     unit = "g" if size.kind == "weight" else "ml"
     amount = format(size.amount.normalize(), "f")
     return f"{size.pack_count} x {amount} {unit}" if size.pack_count > 1 else f"{amount} {unit}"
-
-
-def _total(size: SizeResult) -> Decimal:
-    """Return the total amount of a size in grams or millilitres: pack size times pack count."""
-    assert size.amount is not None
-    return size.amount * size.pack_count
 
 
 def n3_disagreements(
@@ -205,19 +208,13 @@ def n3_disagreements(
         The disagreements, as messages; empty if the labels and N3's reading agree.
     """
     problems = []
-    if left.status == "ok" and right.status == "ok":
-        same_kind = left.kind == right.kind
-        sizes_differ = same_kind and _total(left) != _total(right)
-        if not same_kind:
-            relation = "of different kinds"
-        elif sizes_differ:
-            relation = "different sizes"
-        elif left.pack_count != right.pack_count:
-            relation = "the same size in different packs"
-        else:
-            relation = "equal"
+    relation_code = size_relation(left, right)
+    if relation_code != "unknown":
+        same_kind = relation_code != "different_kind"
+        sizes_differ = relation_code == "different_amount"
+        relation = _RELATION_PHRASES[relation_code]
         reading = f"N3 reads {_describe(left)} and {_describe(right)}"
-        if label == "match" and relation != "equal":
+        if label == "match" and relation_code != "same":
             problems.append(f"{reading} ({relation}), but the label is match")
         if "size_differs" in tags and not sizes_differ:
             problems.append(f"the tag size_differs is present, but {reading} ({relation})")

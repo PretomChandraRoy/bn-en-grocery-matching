@@ -121,7 +121,41 @@ Check the label and skipped files with `python -m src.label.validate`, which che
 
 Generated files, which are never edited by hand:
 
-- `data/interim/candidates.csv` lists the candidate pairs with the strategy and scores that selected each one. Keeping this outside `data/labelled/` leaves the label files in the agreed pair-record format plus `guidelines_version`.
+- `data/interim/candidates.csv` lists the candidate pairs with the strategy and features that selected each one (see "Candidate pairs" below). Keeping this outside `data/labelled/` leaves the label files in the agreed pair-record format plus `guidelines_version`.
 - `data/interim/pairs_final.csv` has one row per pair for the published dataset: the adjudicated label if there is one, otherwise the single labeller's current label, together with both original labels for the pairs in the overlap sample.
 
 Agreement is computed from each labeller's latest label made before the first row of `adjudication.csv`. A script prints Cohen's kappa and the percentage of identical labels, and the figures are recorded in `docs/reviews/`.
+
+## Candidate pairs
+
+`python -m src.label.candidates` writes `data/interim/candidates.csv` from the listings in `data/raw`. For the pilot, a candidate is every pair of listings from two different sources in the same project category (pandamart by meenabazar). The file is generated, never edited by hand, and is the same on every run: it has no timestamp and no random choice. It holds IDs and numbers only, never a title and never a price, so it can be tracked by DVC like the other data files. After generating it, run `dvc add data/interim/candidates.csv`, commit the `.dvc` file and `dvc push`. A new run refuses to replace an existing file that has pairs the new one lacks, because labels may refer to them; `--replace` overrides this.
+
+The text features compare the names of the products and not their sizes: the title is cleaned (`title_norm`, which writes every unit as `kg`, `g`, `l` or `ml`), and then the numbers, the units after them and the `x` of a multipack are dropped. The size features use the reading of the sizes by N3, with the total of a pack being its size times its pack count. The price features are ratios of the smaller to the larger value, from 0 to 1, rounded to four places. These features are for sampling and analysis. The labelling tool shows labellers none of them.
+
+| Column | Meaning |
+|---|---|
+| `pair_id` | The pair, in the form of the label files |
+| `left_source` | The source of the left listing, the one that comes first alphabetically |
+| `left_id` | The `listing_id` of the left listing |
+| `right_source` | The source of the right listing |
+| `right_id` | The `listing_id` of the right listing |
+| `category` | The project category, which both listings share |
+| `strategy` | How the pair was chosen; `pilot_all_pairs` means that every pair was taken |
+| `token_jaccard` | Shared name words over all name words |
+| `token_overlap` | Shared name words over the words of the shorter name |
+| `char3_jaccard` | Shared character trigrams over all trigrams of the names, written without spaces |
+| `size_relation` | `same`, `same_total_different_pack`, `different_amount`, `different_kind` or `unknown` (a size was not read) |
+| `left_kind` | `weight` or `volume` for the left size; empty if it was not read |
+| `left_total` | The left total in grams or millilitres; empty if the size was not read |
+| `left_packs` | The left pack count; empty if the size was not read |
+| `right_kind` | `weight` or `volume` for the right size; empty if it was not read |
+| `right_total` | The right total in grams or millilitres; empty if the size was not read |
+| `right_packs` | The right pack count; empty if the size was not read |
+| `size_ratio` | The smaller total over the larger; empty unless both sizes were read and are of one kind |
+| `price_ratio` | The smaller price over the larger |
+| `unit_price_ratio` | The ratio of the prices per 100 g or 100 ml; empty unless `size_ratio` is given |
+| `left_script` | The `script` value of the left listing |
+| `right_script` | The `script` value of the right listing |
+| `cross_script` | `true` if exactly one title has Bangla letters, as for the tag of that name; otherwise `false` |
+
+The sampling strata are not decided. `python -m src.label.candidates --preview-strata` prints, without writing anything, how the pairs would split into the provisional strata `wording_variation`, `likely_match`, `hard_negative` and `random_negative`, and how the features are spread. The thresholds of the preview can be changed with `--high`, `--low` and `--price-min`.

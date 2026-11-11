@@ -222,3 +222,24 @@
 #### Open questions
 
 - `adjudicated_by` still has no defined form; decide with piece 1c.
+
+### Piece 2: candidate pair generation
+
+#### Done
+
+- Built `python -m src.label.candidates` (`src/label/candidates.py`, with the pure feature functions in `src/label/features.py`). It writes `data/interim/candidates.csv`: every pair of listings from two different sources in the same category, 47 pairs for the pilot (rice 9, lentils 1, cooking oil 1, spices 36), the meenabazar listing on the left. The file has 23 columns: the pair columns, `category`, `strategy` (`pilot_all_pairs`), three text similarities (`token_jaccard`, `token_overlap`, `char3_jaccard`), the size comparison from N3 (`size_relation`, kind, total and pack count of each side, `size_ratio`), `price_ratio`, `unit_price_ratio` (per 100 g or 100 ml), both `script` values and `cross_script`. It holds IDs and numbers only: no title, no price, no brand, no URL. It is the same on every run (no timestamp, no random choice; checked by the checksum of two runs on the real data), UTF-8, LF, no byte-order mark. A new run refuses to replace an existing file that has pairs the new one lacks, because labels may refer to them; `--replace` overrides it.
+- Design choices beyond the plan, for the owner to review: (1) the text similarities compare the product names without their sizes (the numbers, the unit after a number and the `x` of a multipack are dropped after `clean_text`), so that two same-size titles do not look similar because of the size alone; size agreement is a feature of its own. (2) The size relation is shared: `features.size_relation` is used by both the generator and the validator for labelled files (the validator's inline version was replaced; its 136 tests passed unchanged). (3) `--preview-strata` prints, and writes nothing, how the pairs would fall into four provisional strata (`wording_variation`, `likely_match`, `hard_negative`, `random_negative`, a pair going to the first that fits) with thresholds that can be changed (`--high`, `--low`, `--price-min`; defaults 0.60, 0.35, 0.70) and the spread of the features. Nothing is stored as final.
+- Real data, preview with the default thresholds (provisional, not a decision): `wording_variation` 8 (all spices; 17.0 percent of the 47 pairs, the plan says about 15), `likely_match` 5 (rice 2, spices 3), `hard_negative` 2, `random_negative` 32. The 18 same-size pairs have a median `char3_jaccard` of 0.32 (minimum 0.05, maximum 1.00) and the 29 different-size pairs a median of 0.15, so most same-size pairs have names that look different; whether the 8 `wording_variation` pairs are true matches or only different products of one size can be known only from the labels. Price ratios for the same-size pairs run from 0.43 to 1.00, median 0.93.
+- Tests (167 added, 1,305 in total, all on invented data in scratch folders): the features with hand-worked values, the pairs (counts, sources, categories, order, three sources, one source), particular pairs with prices chosen for hand calculation, what the file does not contain, determinism, file writing and refusal, that the validator accepts a generated pair and rejects another, the strata at their boundaries, the command line, and a sync test that compares the documented columns, values and options with the code. A safety test now also fails if Git tracks a data file under `data/interim` or `data/labelled`. 61 deliberate bugs were applied to scratch copies; the first run caught 59. One miss was dead code (a price guard that `ratio` already makes redundant), which I removed; the other was a real gap (only the right side was ever a multipack in the fixtures), fixed with a new test. All are caught now.
+- Checked on the real data against an independent computation (regular expressions for the name tokens, exact fractions for the ratios, the size relation worked out from N3's amounts): same 47 pairs, and 0 differences in text similarity, size relation, size ratio and both price ratios. Both computations share N3 and `clean_text`, which have their own tests.
+- Documented in `docs/data_entry_rules.md` ("Candidate pairs", with the table of columns).
+
+#### Next
+
+- The owner runs `dvc add data/interim/candidates.csv`, commits `data/interim/candidates.csv.dvc` and `data/interim/.gitignore`, and `dvc push`. Until then the file is untracked and not ignored by Git, so it must not be added with `git add`.
+- Piece 3: the labelling tool. It must read only the ID columns of `candidates.csv`.
+- Then piece 1c (overlap and adjudication checks).
+
+#### Open questions
+
+- The provisional thresholds and the definition of `wording_variation` are for the owner to judge after the pilot labels exist: with 47 pairs the preview shows only that the definitions are workable, not that they select what they are meant to.

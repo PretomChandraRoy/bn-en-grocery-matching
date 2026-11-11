@@ -45,6 +45,27 @@ def test_git_tracks_nothing_under_local_or_data_raw() -> None:
     assert tracked == []
 
 
+def test_git_tracks_no_data_file_under_data_interim_or_data_labelled() -> None:
+    """Labels and generated data are versioned with DVC; only placeholder files may be in Git."""
+    git = shutil.which("git")
+    if git is None or not (REPO_DIR / ".git").exists():
+        pytest.skip("Git or the .git folder is not available")
+    tracked = subprocess.run(
+        [git, "ls-files", "--", "data/interim", "data/labelled"],
+        cwd=REPO_DIR,
+        capture_output=True,
+        text=True,
+        check=True,
+    ).stdout.split()
+    allowed = {"data/interim/.gitkeep", "data/labelled/.gitkeep"}
+    data_files = [
+        name
+        for name in tracked
+        if name not in allowed and not name.endswith((".dvc", ".gitignore"))
+    ]
+    assert data_files == []
+
+
 def test_every_file_in_data_raw_is_valid() -> None:
     files = sorted(RAW_DIR.glob("*.csv"))
     if not files:

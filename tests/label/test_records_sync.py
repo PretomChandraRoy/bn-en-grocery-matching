@@ -35,36 +35,11 @@ from src.label.records import (
     read_version_history,
     skipped_file_name,
 )
+from tests.label.doc_readers import read, section, table_rows
 
 ENTRY_RULES = REPO_DIR / "docs" / "data_entry_rules.md"
 CLAUDE_MD = REPO_DIR / "CLAUDE.md"
 _BACKTICKED = re.compile(r"`([^`]+)`")
-
-
-def read(path: Path) -> str:
-    return path.read_text(encoding="utf-8")
-
-
-def section(text: str, heading: str) -> list[str]:
-    """Return the lines under a '## ' heading, up to the next '## ' heading."""
-    lines = text.splitlines()
-    assert f"## {heading}" in lines, f"no '## {heading}' heading found"
-    start = lines.index(f"## {heading}") + 1
-    end = next((i for i in range(start, len(lines)) if lines[i].startswith("## ")), len(lines))
-    return lines[start:end]
-
-
-def table_rows(lines: list[str]) -> list[list[str]]:
-    """Return the cells of each body row of the Markdown tables in the lines."""
-    rows = []
-    for line in lines:
-        if not line.startswith("|"):
-            continue
-        cells = [cell.strip() for cell in line.strip().strip("|").split("|")]
-        if set("".join(cells)) <= set("-: "):
-            continue  # the separator row
-        rows.append(cells)
-    return rows[1:] if rows else rows  # the first row is the header
 
 
 def guideline_tag_rows() -> list[list[str]]:

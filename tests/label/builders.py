@@ -68,7 +68,7 @@ def listing_row(
         "brand": brand,
         "size_value": "",
         "size_unit": "",
-        "price_bdt": PRICES[source],
+        "price_bdt": PRICES.get(source, "100"),
         "category": category,
         "source_category": "",
         "script": script,
@@ -89,11 +89,28 @@ def csv_bytes(columns: tuple[str, ...], rows: list[dict[str, str]] | list[list[s
     return buffer.getvalue().encode("utf-8")
 
 
-def write_raw(raw_dir: Path, listings: list[tuple[str, ...]] | None = None) -> Path:
-    """Write the invented listings into a scratch data/raw folder, one file per source."""
+def write_raw(
+    raw_dir: Path,
+    listings: list[tuple[str, ...]] | None = None,
+    prices: dict[tuple[str, str], str] | None = None,
+) -> Path:
+    """Write the invented listings into a scratch data/raw folder, one file per source.
+
+    Args:
+        raw_dir: The folder.
+        listings: Tuples of (source, listing_id, title, brand, category, script); defaults to
+            LISTINGS.
+        prices: Prices by (source, listing_id) that replace the default price of the source.
+    """
     raw_dir.mkdir(parents=True, exist_ok=True)
-    for source in ("pandamart", "meenabazar"):
-        rows = [listing_row(*item) for item in (listings or LISTINGS) if item[0] == source]
+    items = listings or LISTINGS
+    for source in sorted({item[0] for item in items}):
+        rows = []
+        for item in items:
+            if item[0] != source:
+                continue
+            price = (prices or {}).get((item[0], item[1]), PRICES.get(source, "100"))
+            rows.append(listing_row(*item, price_bdt=price))
         (raw_dir / f"{source}_20261105.csv").write_bytes(csv_bytes(COLUMNS, rows))
     return raw_dir
 
