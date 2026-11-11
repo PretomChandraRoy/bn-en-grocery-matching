@@ -28,11 +28,10 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from src.collect.validate import CATEGORIES
-from src.normalise.digits import bangla_digits_to_ascii
 from src.normalise.patterns import BOUNDARY_AFTER, BOUNDARY_BEFORE, WORD_CHARS
+from src.normalise.prepare import prepare
 from src.normalise.sizes import SizeResult, parse_size
 from src.normalise.text_clean import clean_text
-from src.normalise.unicode_clean import clean_unicode
 from src.normalise.units import UNITS
 
 # Pack-count wording in title_norm (lower case by then): "pack of 2", "packs of 3", "2 packs".
@@ -71,11 +70,6 @@ class RowReport:
     has_currency_fraction: bool
 
 
-def _prepare(text: str) -> str:
-    """Apply the first two normalisation steps (N1 and N2)."""
-    return bangla_digits_to_ascii(clean_unicode(text))
-
-
 def report_row(file_name: str, row: dict[str, str]) -> RowReport:
     """Run the normalisation steps on one row of a collected file.
 
@@ -87,9 +81,9 @@ def report_row(file_name: str, row: dict[str, str]) -> RowReport:
         The RowReport.
     """
     title = row.get("title_raw") or ""
-    prepared = _prepare(title)
+    prepared = prepare(title)
     size = parse_size(
-        prepared, _prepare(row.get("size_value") or ""), _prepare(row.get("size_unit") or "")
+        prepared, prepare(row.get("size_value") or ""), prepare(row.get("size_unit") or "")
     )
     title_norm = clean_text(prepared)
     pack = _PACK_WORDING.search(title_norm)

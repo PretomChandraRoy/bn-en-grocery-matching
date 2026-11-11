@@ -202,3 +202,23 @@
 #### Open questions
 
 - `adjudicated_by` has no defined form yet (the labeller ID form is `L` and digits); decide when piece 1c is built.
+
+### Piece 1b: the validator for label and skipped files
+
+#### Done
+
+- Built `python -m src.label.validate [FILE ...]` (`src/label/validate.py`), which checks every `labels_<labeller>.csv` and `skipped_<labeller>.csv` in `data/labelled`, or the files named, and changes nothing. Errors: header, encoding, file name and labeller; `pair_id` form, required order, one source, listings absent from `data/raw`, pair absent from `candidates.csv` when that file exists; the four ID columns against `pair_id`; label, note and tags with the consistency rules (through `check_label_and_tags`); `cross_script` missing or surplus; `labeller` against the file name; `labelled_at` form, future, and earlier than the row above; `guidelines_version` against the version history. Warnings: where N3's reading of the two sizes disagrees with the label or the tags (a `match` with sizes N3 reads as different; `size_differs`, `unit_kind_differs`, `multipack` and `promo_quantity` present without support or missing where N3 supports them), a row that repeats the row above for its pair, a pair skipped twice, a pair both skipped and labelled by one labeller, and a file with a header only. Size equality uses the total (pack size times pack count), so "2 x 500 g" equals "1000 g" and differs only as a pack. `adjudication.csv` and `overlap_sample.csv` are reported as not checked yet (piece 1c). Messages name rows, columns, IDs and N3's amounts, never a title.
+- Added `src/label/listings.py`: `load_listings` (without the price and the collection time, so that the labelling tool cannot show a price), `read_prices` (for the pair generator only), `parse_listing_size` (N3; not for the tool) and `read_candidate_pair_ids`. Added `src/normalise/prepare.py` (`prepare`: N1 and N2 as one function), used by `report.py` in place of its private `_prepare`; the report's behaviour and tests are unchanged. This is a small change from the plan, which said to make `_prepare` public: a separate module avoids importing a script module.
+- Tests (163 added, 1,138 in total): 136 for the validator, 19 for the listings loader and 8 for `prepare`, all on invented data written to scratch folders; `tests/label/builders.py` holds the builders that pieces 2 and 3 will reuse. 79 deliberate bugs (each rule of the validator, the listings reader, the candidates reader and `prepare`, including a bug that puts a title into a message) were applied to scratch copies and all are caught. The first run missed three: two were real test gaps (the ID columns of an unsound pair, and a labeller that is not L and digits), fixed with new tests; the third was a bug I had built wrongly (it behaved like the original), rebuilt and caught.
+- Found and fixed while testing: the loader first passed `collected_at` to `Listing`, which has no such field; two test files both named `test_validate.py` (in `tests/collect` and `tests/label`) make pytest fail when the whole suite runs, because the repository has no `__init__.py` files, so the new one is `tests/label/test_label_validate.py`; and one N3 message said "do not differ" for sizes of different kinds.
+- Documented the command and its checks in `docs/data_entry_rules.md` ("Labelled data files").
+- Tried on the real listings in `data/raw` with synthetic placeholder labels written to the scratchpad (not `data/labelled`): a clean file for all 47 real pairs gave 0 errors and 0 warnings (29 `non_match`, 18 `unsure`, which matches the 29 different-size and 18 equal-size pairs found before), and a second file with 10 deliberate faults gave 14 errors and 1 warning, each with row, column and IDs and no title. `data/labelled` is empty, so the default run reports no files.
+
+#### Next
+
+- Piece 2: candidate pair generation (`data/interim/candidates.csv`, with the features and the read-only strata preview).
+- Then piece 3 (the labelling tool) and piece 1c (overlap and adjudication checks).
+
+#### Open questions
+
+- `adjudicated_by` still has no defined form; decide with piece 1c.
