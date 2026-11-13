@@ -46,12 +46,11 @@ from pathlib import Path
 from typing import Literal
 
 from src.collect.validate import RAW_DIR, Problem, parse_timestamp
-from src.label.features import size_relation
+from src.label.features import parse_listing_size, size_relation
 from src.label.listings import (
     Listing,
     ListingKey,
     load_listings,
-    parse_listing_size,
     read_candidate_pair_ids,
 )
 from src.label.records import (

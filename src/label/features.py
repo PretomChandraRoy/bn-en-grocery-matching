@@ -2,7 +2,8 @@
 
 The candidate pair generator records these for every pair, so that the sampling strata can be
 tried on real data. The validator for labelled files uses the size relation too, so that both
-read the sizes in the same way.
+read the sizes in the same way. The labelling tool must not import this module: it reads the
+sizes with the size parser (N3), and labellers must not see N3's reading.
 
 Text similarity compares the names of the products, not their sizes. A title is first prepared
 (prepare) and cleaned (clean_text, which also writes every unit as kg, g, l or ml). The numbers,
@@ -19,10 +20,12 @@ The project's regular-expression rules apply: digits are matched with [0-9].
 import re
 from collections.abc import Sequence
 from decimal import Decimal
+from functools import cache
 from typing import Literal
 
+from src.label.listings import Listing
 from src.normalise.prepare import prepare
-from src.normalise.sizes import SizeResult
+from src.normalise.sizes import SizeResult, parse_size
 from src.normalise.text_clean import clean_text
 
 SizeRelation = Literal[
@@ -128,6 +131,24 @@ def char3_jaccard(left: Sequence[str], right: Sequence[str]) -> Decimal:
     if not a or not b:
         return _quantise(Decimal(0))
     return _quantise(Decimal(len(a & b)) / Decimal(len(a | b)))
+
+
+@cache
+def parse_listing_size(listing: Listing) -> SizeResult:
+    """Read the pack size of a listing with the size parser (N3).
+
+    The title and the size fields are prepared (N1 and N2) first; the listing itself is not
+    changed.
+
+    Args:
+        listing: The listing.
+
+    Returns:
+        The SizeResult.
+    """
+    return parse_size(
+        prepare(listing.title_raw), prepare(listing.size_value), prepare(listing.size_unit)
+    )
 
 
 def total_amount(size: SizeResult) -> Decimal:

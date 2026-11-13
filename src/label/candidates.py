@@ -36,6 +36,7 @@ from src.label.features import (
     format_decimal,
     format_total,
     name_tokens,
+    parse_listing_size,
     ratio,
     size_ratio,
     size_relation,
@@ -48,7 +49,6 @@ from src.label.listings import (
     Listing,
     ListingKey,
     load_listings,
-    parse_listing_size,
     read_candidate_pair_ids,
     read_prices,
 )

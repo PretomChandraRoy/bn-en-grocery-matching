@@ -8,20 +8,18 @@ A Listing deliberately has no price. The labelling tool builds on it, and labell
 the price (docs/labelling_guidelines.md), so code that only has a Listing cannot show one. The
 pair generator reads prices separately, with read_prices.
 
-parse_listing_size gives the reading of the size by the size parser (N3). The labelling tool
-must not show it, because the labels will later be used to evaluate that parser; only the
-validator and the pair generator use it.
+This module does not import the size parser (N3), on purpose: the labelling tool imports it,
+and the tool must not show N3's reading, because the labels will later be used to evaluate that
+parser. The reading of a listing's size is parse_listing_size in features.py, which only the
+validator and the pair generator use.
 """
 
 import csv
 from dataclasses import dataclass, fields
 from decimal import Decimal, InvalidOperation
-from functools import cache
 from pathlib import Path
 
 from src.collect.validate import COLUMNS, RAW_DIR
-from src.normalise.prepare import prepare
-from src.normalise.sizes import SizeResult, parse_size
 
 ListingKey = tuple[str, str]
 
@@ -162,21 +160,3 @@ def read_candidate_pair_ids(path: Path) -> frozenset[str] | None:
                 raise ValueError(f"{path.name}, row {number}: pair_id {pair_id} appears twice")
             ids.add(pair_id)
     return frozenset(ids)
-
-
-@cache
-def parse_listing_size(listing: Listing) -> SizeResult:
-    """Read the pack size of a listing with the size parser (N3).
-
-    The title and the size fields are prepared (N1 and N2) first; the listing itself is not
-    changed.
-
-    Args:
-        listing: The listing.
-
-    Returns:
-        The SizeResult.
-    """
-    return parse_size(
-        prepare(listing.title_raw), prepare(listing.size_value), prepare(listing.size_unit)
-    )

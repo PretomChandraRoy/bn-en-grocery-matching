@@ -159,3 +159,27 @@ The text features compare the names of the products and not their sizes: the tit
 | `cross_script` | `true` if exactly one title has Bangla letters, as for the tag of that name; otherwise `false` |
 
 The sampling strata are not decided. `python -m src.label.candidates --preview-strata` prints, without writing anything, how the pairs would split into the provisional strata `wording_variation`, `likely_match`, `hard_negative` and `random_negative`, and how the features are spread. The thresholds of the preview can be changed with `--high`, `--low` and `--price-min`.
+
+## Labelling with the tool
+
+Read `docs/labelling_guidelines.md` before every session. Then run `python -m src.label.tool --labeller L1`, with your own ID in place of `L1` (the letter L and digits, never a name). The tool needs `data/interim/candidates.csv` and the listings in `data/raw`. It prints the version of the guidelines when it starts and stamps that version on every label.
+
+For each pair the tool shows the two listings side by side: the source, the category, the brand field, the `size_value` and `size_unit` fields only if the shop filled them in, and the title exactly as collected. The brand field can hold the manufacturer instead of the brand; read the brand from the title. Read the size from the title too, as the guidelines require. The tool never shows the price, the reading of the size by the size parser (N3) or the scores and strata of the candidate pairs, because the labels will later be used to evaluate that parser and the matching models, and they must not depend on them. The comparison of the labels with N3's reading is made afterwards, by the validator, as warnings. If Bangla text does not line up in the two columns on your terminal, use `--width 60`, which stacks the two listings.
+
+Type a key and press Enter. A bare Enter does nothing, so that no label is given by accident.
+
+| Key | Meaning |
+|---|---|
+| `m` | The label `match` |
+| `n` | The label `non_match` |
+| `u` | The label `unsure`, only when the information shown cannot settle the question |
+| `s` | Skip the pair, only for excluded content such as a bundle of different products; the tool asks for a reason, and an empty reason cancels. A difficult pair gets `unsure`, not a skip |
+| `b` | Go back to the previous pair and correct its label |
+| `q` | Quit; the labels are already saved |
+| `?` | Show the keys |
+
+After a label the tool lists the allowed tags and asks for an optional note: tags separated by semicolons with no spaces, then optionally a comment after ` # `, or only `# comment`. A note that breaks the consistency rules is refused with the reason, and `<` goes back to choose the label again. The tag `cross_script` is added by the tool when exactly one title has Bangla letters; a typed one is ignored. When a pair is corrected with `b`, `=` keeps the current note.
+
+Every label is appended to `data/labelled/labels_<labeller>.csv` and flushed to disk at once, so nothing is lost if the session ends. Rows are never edited or deleted: a correction adds a row, the current label of a pair is its latest row, and a correction that changes nothing adds nothing. A skipped pair is appended to `skipped_<labeller>.csv`. Starting the tool again resumes with the first pair that has no label and was not skipped. The pairs come in a fixed order that depends only on the `pair_id`, so adding pairs later does not reorder the existing ones. The tool reads and writes only the files of its own labeller. It stops with a message, and writes nothing, if the guidelines version is not in the version history, if the candidates or the listings cannot be read, if the labeller's own files are malformed, or if the clock of the computer reads earlier than the last row.
+
+After each session: run `python -m src.label.validate`, then `dvc add data/labelled/labels_<labeller>.csv` (and the skipped file, if there is one), commit the `.dvc` file, `dvc push`, `dvc status -c`, and wait for the Google Drive upload to finish. The options of the tool are `--labeller` (required), `--raw-dir`, `--labelled-dir`, `--candidates`, `--guidelines` and `--width`.

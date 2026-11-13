@@ -243,3 +243,28 @@
 #### Open questions
 
 - The provisional thresholds and the definition of `wording_variation` are for the owner to judge after the pilot labels exist: with 47 pairs the preview shows only that the definitions are workable, not that they select what they are meant to.
+
+### Piece 3: the labelling tool
+
+#### Done
+
+- Built `python -m src.label.tool --labeller L1` (`src/label/tool.py`). It shows one pair at a time, side by side (stacked on a narrow display or with `--width 60`): the source, the category, the brand field with the reminder that it may hold the manufacturer, the `size_value` and `size_unit` fields only if filled in, and the title exactly as collected. Keys are typed with Enter and a bare Enter does nothing: `m`, `n`, `u`, `s` (only for excluded content, with a reason; an empty reason cancels), `b` (back, to correct a label), `q`, `?`. After a label it prints the allowed tags and asks for an optional note; a wrong note is refused with the reason, `<` returns to the label and `=` keeps the current note when correcting. `cross_script` is added automatically (a typed one is ignored) and `guidelines_version` is stamped from the `Version:` line, which must be in the version history. Each label is appended and flushed to disk at once (`fsync`); rows are never edited, a correction adds a row, and a correction that changes nothing adds nothing. Starting again resumes with the first pair that has no label and was not skipped; the order is a hash of the `pair_id`, so it does not change when pairs are added. The tool reads and writes only its own labeller's two files, refuses to start (and writes nothing) if those files are malformed, if the candidates or listings cannot be read, or if the clock reads earlier than the last row, and ends with the next steps (validator, `dvc add`, commit, `dvc push`, `dvc status -c`, wait for Drive).
+- The owner's change is built in: no reading of the size by N3 is shown, and no price, similarity score or stratum. This is checked structurally and by behaviour. `parse_listing_size` moved from `listings.py` to `features.py`, so importing the tool loads none of the size parser, the features, the generator or the validator (a test imports it in a fresh interpreter and checks `sys.modules`; another checks the names the tool uses); the tool reads only the `pair_id` column of `candidates.csv` (the tests fill the other columns with values that must never appear); and tests with listings whose N3 figures appear nowhere in the titles check that none of those figures is shown or saved. `Listing` still has no price.
+- A decision for the owner to confirm: the tool does not show the shop's own category (`source_category`), only the project category, as the owner's list and the guidelines say. While checking on the real data I found that both shops fill `source_category` in every row (for example "Grocery" and "Spice & Herb"), and I had wrongly read it as empty earlier. Showing it would be one line in `_listing_lines`.
+- Documented in `docs/data_entry_rules.md` ("Labelling with the tool"), with a sync test for the keys, the symbols of the note prompt and the options.
+- Tests (109 added, 1,414 in total, all on invented data in scratch folders): the display, every key, notes and tags, cross_script, resuming, order, skipping, going back (including across sessions and a pair corrected twice), flushing before the next question, crash safety, the clock, malformed files, only the labeller's own files (a spy on every file opened), nothing hidden shown or saved, the import closure, and that every file the tool writes passes the validator. 74 deliberate bugs were applied to scratch copies; the first run caught 71, and the three misses were gaps in my tests (text exactly at the width limit, the check that the automatic tag is not offered for typing, and the labeller column of each row), now covered. The title-leak safety test also failed once during the work, correctly: an example title in one of my tests had been taken from real data. It was replaced with an invented one.
+- Tried on the real data in a scratch folder (not `data/labelled`) with placeholder answers: the first pair's screen rendered fully, three labels were saved, a skip was cancelled, a correction left unchanged was recognised, and a scan found no real price, candidate score or N3 reading in anything printed or saved. The validator accepted the file with 0 errors; its three warnings are the placeholder answers disagreeing with N3's reading of the sizes, which is what the warnings are for.
+
+#### Not checked
+
+- A real interactive session in a terminal: only scripted sessions were run, so the look of the prompts in the Windows terminal is not checked. The alignment of the two columns for Bangla text could not be checked either: no collected title is in Bangla script, and terminals differ in how they draw Bangla vowel signs; `display_width` is an approximation. If the columns do not line up, `--width 60` stacks the listings.
+
+#### Next
+
+- The owner labels the 47 pilot pairs with `python -m src.label.tool --labeller L1`, then runs `python -m src.label.validate`, `dvc add data/labelled/labels_L1.csv` (and the skipped file, if any), commits the `.dvc` file, `dvc push`, `dvc status -c`, and waits for the Drive upload.
+- Piece 1c: the checks for `overlap_sample.csv` and `adjudication.csv` in the validator, with the form of `adjudicated_by` to decide.
+
+#### Open questions
+
+- Whether the shop's own category should be shown (see above).
+- `adjudicated_by` still has no defined form.

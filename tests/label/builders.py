@@ -157,3 +157,24 @@ def label_row(
 def label_file(rows: list[dict[str, str]]) -> bytes:
     """Return the bytes of a label file holding the rows."""
     return csv_bytes(LABEL_COLUMNS, rows)
+
+
+# Values that must never reach a labeller. They are written into the candidates file of the
+# tool tests, and the tests check that they appear nowhere in what the tool shows or saves.
+POISON = ("0.4242", "0.9191", "0.7373", "ZZPOISON")
+
+
+def write_candidates_file(path: Path, pair_ids: list[str]) -> Path:
+    """Write a candidates file whose columns other than pair_id hold values the tool must ignore."""
+    rows = [[pair_id, "rice", POISON[0], "ZZPOISON", POISON[1], POISON[2]] for pair_id in pair_ids]
+    columns = (
+        "pair_id",
+        "category",
+        "char3_jaccard",
+        "size_relation",
+        "price_ratio",
+        "unit_price_ratio",
+    )
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(csv_bytes(columns, rows))
+    return path

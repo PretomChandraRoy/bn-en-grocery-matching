@@ -10,7 +10,6 @@ from src.collect.validate import COLUMNS
 from src.label.listings import (
     Listing,
     load_listings,
-    parse_listing_size,
     read_candidate_pair_ids,
     read_prices,
 )
@@ -100,37 +99,6 @@ def test_a_row_with_the_wrong_number_of_fields_is_an_error(tmp_path: Path) -> No
     (raw / "pandamart_20261105.csv").write_bytes(csv_bytes(COLUMNS, [["a", "b"]]))
     with pytest.raises(ValueError, match="row 2, does not have 12 fields"):
         load_listings(raw)
-
-
-def test_the_size_is_read_from_the_title_and_the_listing_is_not_changed(tmp_path: Path) -> None:
-    listings = load_listings(write_raw(tmp_path / "raw"))
-    size = parse_listing_size(listings[("pandamart", "1003")])
-    assert (size.status, size.amount, size.kind, size.pack_count) == ("ok", 500, "volume", 2)
-    assert listings[("pandamart", "1003")].title_raw == "Test Oil 2 x 500ml"
-    assert parse_listing_size(listings[("pandamart", "1008")]).status == "missing"
-
-
-def test_the_size_is_read_from_bangla_text(tmp_path: Path) -> None:
-    listings = load_listings(write_raw(tmp_path / "raw"))
-    size = parse_listing_size(listings[("pandamart", "1005")])
-    assert (size.status, size.amount, size.kind) == ("ok", 1000, "weight")
-
-
-def test_bangla_digits_in_the_title_and_the_size_fields_are_read() -> None:
-    title = Listing(
-        "shop", "1", f"{CHAL} {BANGLA_ONE} {KEJI}", "", "", "", "rice", "", "bangla", "u"
-    )
-    assert parse_listing_size(title).amount == 1000
-    fields = Listing(
-        "shop", "2", "Zorbaxo Rice", "", BANGLA_FIVE_ZERO, "gm", "rice", "", "english", "u"
-    )
-    assert parse_listing_size(fields).amount == 50
-
-
-def test_the_size_fields_are_used_when_filled_in() -> None:
-    listing = Listing("shop", "1", "Zorbaxo Rice", "", "500", "gm", "rice", "", "english", "u")
-    size = parse_listing_size(listing)
-    assert (size.status, size.amount, size.source) == ("ok", 500, "field")
 
 
 # The candidates file.

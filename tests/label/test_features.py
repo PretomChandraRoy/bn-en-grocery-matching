@@ -5,6 +5,7 @@ comments. Bangla text is built from code points (see tests/helpers.py).
 """
 
 from decimal import Decimal
+from pathlib import Path
 
 import pytest
 
@@ -13,6 +14,7 @@ from src.label.features import (
     format_decimal,
     format_total,
     name_tokens,
+    parse_listing_size,
     ratio,
     size_ratio,
     size_relation,
@@ -21,12 +23,15 @@ from src.label.features import (
     total_amount,
     unit_price_ratio,
 )
+from src.label.listings import Listing, load_listings
 from src.normalise.sizes import SizeResult
 from tests.helpers import bn
+from tests.label.builders import write_raw
 
 CHAL = bn(0x099A, 0x09BE, 0x09B2)  # চাল
 BANGLA_ONE = bn(0x09E7)  # ১
 KEJI = bn(0x0995, 0x09C7, 0x099C, 0x09BF)  # কেজি
+BANGLA_FIVE_ZERO = bn(0x09EB, 0x09E6)  # ৫০
 ZERO_WIDTH_SPACE = bn(0x200B)
 
 
@@ -284,3 +289,37 @@ def test_format_decimal(value: Decimal | None, expected: str) -> None:
 )
 def test_format_total(value: Decimal, expected: str) -> None:
     assert format_total(value) == expected
+
+
+# Reading the size of a listing with N3.
+
+
+def test_the_size_is_read_from_the_title_and_the_listing_is_not_changed(tmp_path: Path) -> None:
+    listings = load_listings(write_raw(tmp_path / "raw"))
+    size = parse_listing_size(listings[("pandamart", "1003")])
+    assert (size.status, size.amount, size.kind, size.pack_count) == ("ok", 500, "volume", 2)
+    assert listings[("pandamart", "1003")].title_raw == "Test Oil 2 x 500ml"
+    assert parse_listing_size(listings[("pandamart", "1008")]).status == "missing"
+
+
+def test_the_size_is_read_from_bangla_text(tmp_path: Path) -> None:
+    listings = load_listings(write_raw(tmp_path / "raw"))
+    size = parse_listing_size(listings[("pandamart", "1005")])
+    assert (size.status, size.amount, size.kind) == ("ok", 1000, "weight")
+
+
+def test_bangla_digits_in_the_title_and_the_size_fields_are_read() -> None:
+    title = Listing(
+        "shop", "1", f"{CHAL} {BANGLA_ONE} {KEJI}", "", "", "", "rice", "", "bangla", "u"
+    )
+    assert parse_listing_size(title).amount == 1000
+    fields = Listing(
+        "shop", "2", "Zorbaxo Rice", "", BANGLA_FIVE_ZERO, "gm", "rice", "", "english", "u"
+    )
+    assert parse_listing_size(fields).amount == 50
+
+
+def test_the_size_fields_are_used_when_filled_in() -> None:
+    listing = Listing("shop", "1", "Zorbaxo Rice", "", "500", "gm", "rice", "", "english", "u")
+    size = parse_listing_size(listing)
+    assert (size.status, size.amount, size.source) == ("ok", 500, "field")
