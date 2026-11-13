@@ -268,3 +268,22 @@
 
 - Whether the shop's own category should be shown (see above).
 - `adjudicated_by` still has no defined form.
+
+## 2026-11-13
+
+### Done
+
+- The owner added `data/labelled/labels_L9.csv` to DVC and committed it (reported by the owner). The labeller ID L9 is reserved for assistant-suggested pilot labels. The 47 labels in the file were suggested by an AI assistant from the guidelines and written to the file by a script; they were not entered through the labelling tool, and their `labelled_at` times are synthetic (10-second steps from 2026-11-13T23:30:00+06:00). They exist to test the tools only. They must be excluded from the final dataset and from any agreement statistics. L1 stays reserved for the owner's own independent labels. The validator reads the file as valid: 47 rows, 0 errors, 0 warnings (match 5, non_match 41, unsure 1; all under guidelines version 0.2).
+- A first attempt to type the same suggestions through the labelling tool produced 46 rows with transcription errors. The size cross-check of the validator flagged 10 of them as warnings, which shows that the check catches data-entry mistakes. That file was discarded.
+- Two gaps in the guidelines were found in the pilot, to be closed in version 0.3 (reported by the owner): the treatment of brand-line words (for example ACI Aroma against ACI Pure), and whether "Deshi" names a variant. On my reading of the nine rice pairs, a brand-line rule changes no L9 label, because the two pairs with different lines also differ in size; the "Deshi" question concerns one pair, which L9 has as `unsure` under rule 3 of version 0.2. Proposed wording for version 0.3 was shown to the owner; it has not been applied, and the guidelines still read version 0.2.
+
+### Next
+
+- The owner decides on the proposed wording of version 0.3. Once it is approved: change the `Version:` line, add the entry to the version history, add the rules and worked examples (the sync test checks the examples against the consistency rules), and rerun the checks. Version 0.3 should be in force before the owner starts the independent labels as L1. No label in the dataset exists yet, so no real label needs re-checking.
+- When `data/interim/pairs_final.csv` and the agreement script are built, exclude the reserved labeller L9 explicitly (a named constant in `src/label/records.py` and a test), so that the synthetic labels cannot enter the dataset or a statistic by accident.
+- Piece 1c: the checks for `overlap_sample.csv` and `adjudication.csv`; decide the form of `adjudicated_by`.
+
+### Open questions
+
+- Whether "Deshi" (local) is treated as an origin word that does not differ when the other title lacks it (recommended), or as a possible variant that gives `unsure`. The recommendation rests on an assumption that cannot be verified from the data: that an unmarked domestic staple is the same product as one marked Deshi.
+- Whether a brand line named in only one title gives `unsure` (recommended) or is ignored.

@@ -55,3 +55,11 @@ For pandamart, the redistribution of listing text is unclear (see `docs/sources.
 ## How the titles were captured
 
 The 11 pilot titles from pandamart were transcribed by hand from screenshots, not copied from the page, so they may contain small errors, for example in spaces or apostrophes. They were accepted for the pilot without being checked against the website. The 11 pilot titles from meenabazar were transcribed from screenshots in the same way, so they may contain the same kinds of small errors. Like the pandamart titles, the 11 meenabazar titles were accepted without being checked against the website. Every later listing is copied directly from the page with Ctrl+C and pasted as plain text. (Added 2026-11-07; extended 2026-11-08 and 2026-11-11.)
+
+## Labeller L9 is reserved for assistant-suggested labels
+
+The labeller ID L9 is reserved for pilot labels suggested by an AI assistant from the labelling guidelines. The 47 labels in `labels_L9.csv` were written to the file by a script and not entered through the labelling tool, and their `labelled_at` times are synthetic (10-second steps from 2026-11-13T23:30:00+06:00). They were made to test the tools only. They are excluded from the final dataset and from every agreement statistic. The ID L1 is reserved for the independent labels of the project owner. A first attempt to enter the same suggestions through the labelling tool produced 46 rows with transcription errors; the size cross-check of the validator for labelled files flagged 10 of them, and the file was discarded. (Added 2026-11-13.)
+
+## Gaps found in the guidelines during the pilot
+
+Reading the pilot pairs showed two gaps in version 0.2 of the guidelines, which version 0.3 is to close: how brand-line words are treated (for example ACI Aroma against ACI Pure), and whether the word "Deshi" names a variant. The version history of the guidelines records the change, and the labels made under each version carry its number in `guidelines_version`. (Added 2026-11-13.)
