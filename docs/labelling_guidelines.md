@@ -1,6 +1,6 @@
 # Labelling Guidelines
 
-Version: 0.2
+Version: 0.3
 
 Pilot draft, 2026-11-05.
 
@@ -42,7 +42,9 @@ Add every tag that applies (see "Tags"), whichever label results.
    - A size is missing from both its field and the title, or the field and the title disagree: `unsure`.
    - If a title announces a free extra quantity (for example "500 gm + 50 gm free"), use the base size (500 gm) and ignore the free extra. If the size field shows the combined total, use the base size from the title. This is not a disagreement between field and title.
 2. **Packs.** A multipack (for example "2 x 500 gm") is a different item from a single larger pack of the same total ("1 kg"): `non_match`. Two identical multipacks can match. Bundles of different products are not part of the pilot. If you meet one, skip it and tell the project owner.
-3. **Variant.** Variety, grade and type are part of the product. If they differ, the pair is a `non_match`. If you cannot tell whether a word names a variant or only advertises, use `unsure`.
+3. **Variant.** Variety, grade and type are part of the product. If they differ, the pair is a `non_match`. If you cannot tell whether a word names a variant or only advertises, use `unsure`. Two kinds of word have rules of their own, and the same rule applies to both:
+   - **Brand line.** A brand line is a word after the brand that names a range of that brand and is not a variety, grade or product word. In "Brand X Gold Rice" and "Brand X Classic Rice", Gold and Classic are lines of Brand X. A line is part of the product. Different lines: `non_match`. The same line, in any position or spelling: no difference. A line in one title only: `unsure`, because the shorter title may only have dropped it. No line in either title: no difference. If you cannot tell whether a word is a line or only a description, use `unsure`.
+   - **Origin.** An origin word says where a product comes from: Deshi (local), Imported, or the name of a country. A title without an origin word may be the product of either origin, and a deshi product is often a different product from the imported kind. Different origins, such as Deshi against Imported: `non_match`. The same origin in both titles: no difference. An origin word in one title only: `unsure`. No origin word in either title: no difference.
 4. **Brand.**
    - Both give a brand and the brands differ: `non_match`.
    - Both give the same brand: no difference. Different spellings or scripts of one brand name count as the same brand when you are confident.
@@ -67,7 +69,7 @@ Every label may carry tags describing the pair. Write them in the note field, lo
 | `brand_missing` | Exactly one listing gives a brand |
 | `brand_differs` | Both listings give a brand and the brands differ |
 | `size_differs` | The sizes differ after conversion |
-| `variant_differs` | The variety, grade or type differs |
+| `variant_differs` | The variety, grade, type, brand line or origin differs |
 | `multipack` | Either listing is a multipack |
 | `unit_kind_differs` | One size is a weight and the other a volume |
 | `promo_quantity` | Either title announces a free extra quantity |
@@ -89,6 +91,11 @@ The titles below are invented for illustration. They are not real listings.
 | Brand X Turmeric Powder 2 x 100 gm | Brand X Turmeric Powder 200 gm | `non_match` | `multipack` |
 | Brand X Chilli Powder 100 gm Offer | Brand X Chilli Powder 100 gm | `match` | |
 | Brand X Chilli Powder 500 gm + 50 gm Free | Brand X Chilli Powder 500 gm | `match` | `promo_quantity` |
+| Brand X Gold Basmati Rice 1 kg | Brand X Classic Basmati Rice 1 kg | `non_match` | `variant_differs` |
+| Brand X Gold Basmati Rice 1 kg | Brand X Basmati Rice Gold 1 kg | `match` | |
+| Brand X Gold Basmati Rice 1 kg | Brand X Basmati Rice 1 kg | `unsure` | |
+| Brand X Deshi Basmati Rice 1 kg | Brand X Basmati Rice 1 kg | `unsure` | |
+| Brand X Deshi Basmati Rice 1 kg | Brand X Imported Basmati Rice 1 kg | `non_match` | `variant_differs` |
 | Brand X Soybean Oil (no size shown) | Brand Y Soybean Oil 1 L | `non_match` | `brand_differs` |
 
 In the last example, the missing size gives `unsure` (step 1) and the different brands give `non_match` (step 4). Because any `non_match` outweighs `unsure`, the label is `non_match`. The size is unknown, so `size_differs` is not added.
@@ -126,3 +133,4 @@ To measure how reliable the labels are, a second labeller labels an overlap samp
 
 - 0.1 (2026-11-04): pilot draft.
 - 0.2 (2026-11-05): defined the four values of the script field; no change to the labelling rules.
+- 0.3 (2026-11-13): added to step 3 the treatment of brand lines and of origin words such as Deshi, with worked examples, and extended the description of the tag `variant_differs`; no other rule changed. No label of the dataset existed when it was made.

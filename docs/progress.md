@@ -287,3 +287,15 @@
 
 - Whether "Deshi" (local) is treated as an origin word that does not differ when the other title lacks it (recommended), or as a possible variant that gives `unsure`. The recommendation rests on an assumption that cannot be verified from the data: that an unmarked domestic staple is the same product as one marked Deshi.
 - Whether a brand line named in only one title gives `unsure` (recommended) or is ignored.
+
+### Guidelines version 0.3 applied
+
+- Applied version 0.3 of `docs/labelling_guidelines.md` with the owner's decisions. Step 3 (Variant) now has two rules, built the same way: a brand line (a word after the brand that names a range of that brand) and an origin word (Deshi, Imported or the name of a country). Different lines or origins: `non_match` (tag `variant_differs`). The same line or origin in both titles: no difference. A line or origin word in one title only: `unsure`, because a title without the word may be the other product (a deshi product is often a different product from the imported kind) or may only have dropped it. No word of either kind in either title: no difference. The owner rejected the earlier recommendation that Deshi in one title should make no difference. No new tag was added; the description of `variant_differs` in the tag table now covers brand line and origin. Five invented worked examples were added before the last example, so that the paragraph about the last example still holds. The version history has the entry for 0.3 (2026-11-13).
+- Effect on the pilot: no label of the dataset existed, so none needed re-checking. The L9 label of the pair with and without "Deshi" is `unsure`, which agrees with 0.3; L9 stays at version 0.2 (it is append-only and excluded), and the validator accepts both versions (47 rows, 0 errors, 0 warnings). The labelling tool prints version 0.3 and will stamp it on new labels.
+- Checks: 1,414 tests pass, including the sync tests that read the version line, the version history, the tag table and every worked example against the consistency rules; `ruff check` and `ruff format --check` pass. Only the two documents changed; no code.
+
+#### Next
+
+- The owner can start the independent labels as L1 under version 0.3 (`python -m src.label.tool --labeller L1`).
+- Update the card entry again if the guidelines change after the first labels; any later rule change needs the re-check recorded in the version history.
+- Exclude L9 explicitly when `pairs_final.csv` and the agreement script are built, and then piece 1c, as listed above.
