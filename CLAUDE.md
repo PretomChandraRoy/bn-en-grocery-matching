@@ -16,7 +16,7 @@ The problem is hard for these reasons:
 
 | Stage | Period | Scope |
 |---|---|---|
-| A1 Data (CURRENT) | Nov 2026 to Mar 2027 | Collect listings from two sources (pandamart and meenabazar), label about 2,000 candidate pairs, write a dataset card |
+| A1 Data (CURRENT) | Nov 2026 to Apr 2027 | Collect listings from two sources (pandamart and meenabazar), label about 1,000 (plan C) candidate pairs, write a dataset card |
 | A2 Models | Apr to Jun 2027 | Blocking, rule-based baseline, learned similarity (gradient boosting on string features, then multilingual sentence embeddings), evaluation with precision, recall, F1 and pair completeness, error analysis by script (english against romanised, and Bangla-script titles if any are collected) and by brand-line, unit and capitalisation variation |
 | A3 Production | Jul to Sep 2027 | FastAPI and Docker serving, MLflow model registry, GitHub Actions CI/CD, Prometheus and Grafana monitoring, Evidently drift detection, drift-triggered retraining, canary rollout |
 | A4 Paper | Aug to Oct 2027 | Dataset or resource paper |

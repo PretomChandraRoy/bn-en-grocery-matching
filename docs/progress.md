@@ -299,3 +299,35 @@
 - The owner can start the independent labels as L1 under version 0.3 (`python -m src.label.tool --labeller L1`).
 - Update the card entry again if the guidelines change after the first labels; any later rule change needs the re-check recorded in the version history.
 - Exclude L9 explicitly when `pairs_final.csv` and the agreement script are built, and then piece 1c, as listed above.
+
+## 2026-11-14
+
+### Done
+
+- Wrote and saved the pilot review, `docs/reviews/A1-pilot.md`, and the plan for the rest of stage A1, `docs/plans/A1-full-collection.md` (a new folder), after the owner reviewed two drafts and approved the revisions. The figures come from `data/raw`, `candidates.csv` and `labels_L9.csv`, computed with read-only scripts; no listing title is quoted. The review's item 12 (a check of the DVC backup with `dvc status -c`) is left for the owner: the Drive folder was not reachable from the session used for the review, so the backup could not be verified there.
+- Main findings of the review: the pilot gave 5 matches in 47 pairs because the shops were sampled independently; under the provisional thresholds all 8 `wording_variation` pairs were non-matches and the one match that was worded differently (similarity 0.52) fell between the thresholds; the assistant-suggested labels (L9) test the tools only; no hours were recorded.
+- Main points of the plan: collect the overlap first (products that both shops sell, in several sizes, plus near misses); three nested sizes A, B and C (2,000, 1,500 and 1,000 pairs; 1,300, 1,000 and 660 listings), estimated at 175, 145 and 112 hours with the stated assumptions; the two strata that hold the matches are drawn take-all, with a sensitivity for a 20 percent leak and a rule to estimate the leak from a calibration sample before narrowing a stratum (price minimum first, the estimate recorded in the dataset card); a stratified second-labeller sample with kappa and positive and negative agreement; no L1 labels on the 47 pilot pairs, and practice labels for timing kept in a separate file, `data/practice/labels_L1.csv`, outside the dataset; an ID-only worklist of intended pairs under DVC (proposal); a second schema version for a `seller` column and, only if a pilot title is wrong, a list of superseded files; a schedule that front-loads the work because of graduation and Ramadan. The owner's expected dates for Ramadan (from 9 February 2027) and Eid al-Fitr (10 March, or 11 March if the moon is not sighted on 9 March) come from Bangla Date Today, checked on 2026-11-14, and are subject to moon sighting.
+- With the lighter hours of February (16 h) and March (13 h), which are assumptions that the owner will confirm, only C fits (it needs 112 h of the 111 available); B would need about 11 hours a week in December and January. All the time figures are assumptions to be replaced after batch 0. Section 8 of the plan lists 16 decisions, all still open.
+
+### Next
+
+- The owner runs `dvc status -c` with Google Drive mounted and reports the result (review, item 12).
+- The owner decides the target size, the weekly hours, the seller column, the second labeller and the delivery location, and the remaining decisions of section 8 of the plan. Then: the scouting pass, the title check of the 22 pilot listings, the permission requests, and the gaps of `docs/sources.md`.
+- Build before batch 1, once approved (plan, decision 13): the sampler, the stratified overlap sample and the agreement figures, the exclusion of L9, the yield report, and the seller schema if chosen; `CLAUDE.md` does not yet list `docs/plans` in its repository layout.
+
+### Open questions
+
+- All 16 decisions of section 8 of the plan, and the February and March hours.
+- Whether the 22 pilot titles are correct (a wrong title cannot be fixed today).
+
+### Plan C decisions applied (2026-11-14)
+
+- Applied the owner's decisions to `docs/plans/A1-full-collection.md` and saved it. Decision 1: plan C (1,000 labelled pairs, 660 listings); stage A1 ends when C is complete, not in March. Decision 2: about 5 hours a week, the same every month; graduation and the lighter February and March hours are removed from the plan, and Ramadan is kept only as a risk to the shops' catalogues, prices and promotions. Decision 7: sessions of 30 listings, with their extra overhead (22 sessions, 5.5 h for C) included in the hours. Decision 17: collection ends with a hard stop on 8 February 2027, the day before Ramadan is expected to begin, overlap first and extras last, and the extras are cut if the pace at 15 January projects a later end. Decisions 3, 4, 5, 6, 8, 9, 13, 15 and 16 are recorded as decided on 2026-11-14, as recommended. Decisions 10, 11, 12 and 14 stay open: they are actions for the owner (the second labeller, the permission requests, the meenabazar delivery location and an optional helper).
+- Results for C at 5 hours a week (all time figures are assumptions, to be replaced after batch 0): 114.3 h including a 15 percent contingency, 22.9 weeks, ending about 24 April 2027 (about 9 April if none of the buffer is used; the buffer is 11.6 h). At that pace 571 of the 660 listings fit by 31 January and 89 more need about 8 days, which is why collection runs to 8 February; with time assumptions 15 percent worse only 497 would fit by 31 January. Main labelling starts in February, after collection, because the sampler needs the whole universe.
+- `CLAUDE.md`: the stage A1 row now reads "Nov 2026 to Apr 2027" and "about 1,000 (plan C) candidate pairs". The A1 period now overlaps stage A2 (Apr to Jun 2027) by about three weeks; A2's blocking and rule-based baseline need the listings and the candidate pairs, not the labels. `docs/reviews/A1-pilot.md` needed no change for the owner's hours: it mentions none. `CLAUDE.md` does not yet list `docs/plans` in its repository layout.
+
+#### Next
+
+- Owner's actions: decisions 10, 11, 12 and 14 (second labeller, permission requests, delivery location, optional helper); `dvc status -c` with Drive mounted; the title check of the 22 pilot listings.
+- Build before batch 1 (decision 13): the sampler, the stratified overlap sample and the agreement figures, the exclusion of L9, the yield report and the seller schema (version 2 of the listing file).
+- Scouting pass, permission requests, the gaps of `docs/sources.md`, then batch 0.
